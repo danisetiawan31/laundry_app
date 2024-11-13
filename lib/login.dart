@@ -35,12 +35,12 @@ class _LoginPageState extends State<LoginPage> {
       if (role == 'user') {
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (context) => UserHomePage()),
+          MaterialPageRoute(builder: (context) => const UserHomePage()),
         );
       } else if (role == 'owner') {
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (context) => OwnerHomePage()),
+          MaterialPageRoute(builder: (context) => const OwnerHomePage()),
         );
       }
     } catch (e) {

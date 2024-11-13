@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'user_home_page.dart';
 
 class SignUpScreen extends StatefulWidget {
+  const SignUpScreen({super.key});
+
   @override
   _SignUpScreenState createState() => _SignUpScreenState();
 }
@@ -19,7 +21,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
 
   Future<void> signUp() async {
     try {
-      UserCredential userCredential = await _auth.createUserWithEmailAndPassword(
+      UserCredential userCredential =
+          await _auth.createUserWithEmailAndPassword(
         email: emailController.text.trim(),
         password: passwordController.text.trim(),
       );
@@ -33,7 +36,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
       });
 
       Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (context) => UserHomePage()),
+        MaterialPageRoute(builder: (context) => const UserHomePage()),
       );
     } catch (e) {
       setState(() {
@@ -46,7 +49,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Sign Up'),
+        title: const Text('Sign Up'),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -55,38 +58,38 @@ class _SignUpScreenState extends State<SignUpScreen> {
           children: <Widget>[
             TextField(
               controller: nameController,
-              decoration: InputDecoration(
+              decoration: const InputDecoration(
                 labelText: 'Name',
                 border: OutlineInputBorder(),
               ),
             ),
-            SizedBox(height: 16),
+            const SizedBox(height: 16),
             TextField(
               controller: emailController,
-              decoration: InputDecoration(
+              decoration: const InputDecoration(
                 labelText: 'Email',
                 border: OutlineInputBorder(),
               ),
             ),
-            SizedBox(height: 16),
+            const SizedBox(height: 16),
             TextField(
               controller: passwordController,
               obscureText: true,
-              decoration: InputDecoration(
+              decoration: const InputDecoration(
                 labelText: 'Password',
                 border: OutlineInputBorder(),
               ),
             ),
-            SizedBox(height: 16),
+            const SizedBox(height: 16),
             if (errorMessage.isNotEmpty)
               Text(
                 errorMessage,
-                style: TextStyle(color: Colors.red),
+                style: const TextStyle(color: Colors.red),
               ),
-            SizedBox(height: 16),
+            const SizedBox(height: 16),
             ElevatedButton(
               onPressed: signUp,
-              child: Text('Sign Up'),
+              child: const Text('Sign Up'),
             ),
           ],
         ),

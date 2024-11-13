@@ -1,6 +1,12 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:laundry_app/price_list_order.dart';
+
+// Import halaman lainnya
+import 'payment_page.dart';
+import 'chat_page.dart';
+import 'user_history.dart';
 
 class UserHomePage extends StatefulWidget {
   const UserHomePage({super.key});
@@ -11,6 +17,7 @@ class UserHomePage extends StatefulWidget {
 
 class _UserHomePageState extends State<UserHomePage> {
   String? selectedName;
+  int _selectedIndex = 0;
 
   @override
   void initState() {
@@ -27,12 +34,41 @@ class _UserHomePageState extends State<UserHomePage> {
             .doc(user.uid)
             .get();
         setState(() {
-          selectedName =
-              userDoc['name']; // Pastikan field name tersedia di Firestore
+          selectedName = userDoc['name'];
         });
       }
     } catch (e) {
       print("Error fetching user name: $e");
+    }
+  }
+
+  void _onItemTapped(int index) {
+    setState(() {
+      _selectedIndex = index;
+    });
+
+    if (index == 0) {
+      if (_selectedIndex != 0) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const UserHomePage()),
+        );
+      }
+    } else if (index == 1) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => const PaymentPage()),
+      );
+    } else if (index == 2) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => const ChatPage()),
+      );
+    } else if (index == 3) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => OrderHistoryPage()),
+      );
     }
   }
 
@@ -41,15 +77,13 @@ class _UserHomePageState extends State<UserHomePage> {
     return Scaffold(
       body: Stack(
         children: [
-          // Background Image
           Container(
             decoration: BoxDecoration(
               image: DecorationImage(
-                image: const AssetImage(
-                    'bg1.png'), // Ganti dengan path background Anda
+                image: const AssetImage('bg1.png'),
                 fit: BoxFit.cover,
                 colorFilter: ColorFilter.mode(
-                  Colors.white.withOpacity(0.9), // Transparansi
+                  Colors.white.withOpacity(0.9),
                   BlendMode.dstATop,
                 ),
               ),
@@ -61,13 +95,11 @@ class _UserHomePageState extends State<UserHomePage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Profil
                   Row(
                     children: [
                       const CircleAvatar(
                         radius: 30,
-                        backgroundImage: AssetImage(
-                            'assets/profile_image.png'), // Ganti dengan path gambar profil Anda
+                        backgroundImage: AssetImage('assets/profile_image.png'),
                       ),
                       const SizedBox(width: 16),
                       Column(
@@ -86,8 +118,6 @@ class _UserHomePageState extends State<UserHomePage> {
                     ],
                   ),
                   const SizedBox(height: 20),
-
-                  // Slider Promosi
                   const Text(
                     'Promosi',
                     style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
@@ -98,15 +128,12 @@ class _UserHomePageState extends State<UserHomePage> {
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(10),
                       image: const DecorationImage(
-                        image: AssetImage(
-                            'img1.jpg'), // Ganti dengan path gambar promosi Anda
+                        image: AssetImage('img1.jpg'),
                         fit: BoxFit.cover,
                       ),
                     ),
                   ),
                   const SizedBox(height: 20),
-
-                  // Layanan Kami
                   const Text(
                     'Layanan Kami',
                     style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
@@ -123,10 +150,10 @@ class _UserHomePageState extends State<UserHomePage> {
                       mainAxisSpacing: 10,
                     ),
                     children: [
-                      serviceCard('Cuci Aja', 'img2.jpg'), // Path ikon layanan
-                      serviceCard('Cuci Setrika', 'assets/iron_icon.png'),
-                      serviceCard('Cuci Bed Cover', 'assets/bed_icon.png'),
-                      serviceCard('Cuci Gorden', 'assets/curtain_icon.png'),
+                      serviceCard('Cuci Aja', 'img2.jpg'),
+                      serviceCard('Cuci Setrika', 'iron.png'),
+                      serviceCard('Cuci Bed Cover', 'bed.png'),
+                      serviceCard('Cuci Gorden', 'carpet.png'),
                     ],
                   ),
                 ],
@@ -135,14 +162,15 @@ class _UserHomePageState extends State<UserHomePage> {
           ),
         ],
       ),
-      // Bottom Navigation Bar
       bottomNavigationBar: BottomNavigationBar(
         selectedItemColor: Colors.blue,
         unselectedItemColor: Colors.grey,
         showUnselectedLabels: true,
+        currentIndex: _selectedIndex,
+        onTap: _onItemTapped,
         items: const [
           BottomNavigationBarItem(
-            icon: Icon(Icons.home),
+            icon: Icon(Icons.home_filled),
             label: 'Home',
           ),
           BottomNavigationBarItem(
@@ -150,7 +178,7 @@ class _UserHomePageState extends State<UserHomePage> {
             label: 'Order',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.chat),
+            icon: Icon(Icons.chat_bubble_outline),
             label: 'Chat',
           ),
           BottomNavigationBarItem(
@@ -158,7 +186,7 @@ class _UserHomePageState extends State<UserHomePage> {
             label: 'History',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.person),
+            icon: Icon(Icons.person_outline),
             label: 'Profile',
           ),
         ],
@@ -166,34 +194,43 @@ class _UserHomePageState extends State<UserHomePage> {
     );
   }
 
-  // Widget untuk kartu layanan
   Widget serviceCard(String title, String iconPath) {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(10),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.grey.withOpacity(0.2),
-            spreadRadius: 2,
-            blurRadius: 5,
-            offset: const Offset(0, 3),
-          ),
-        ],
-      ),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Image.asset(
-            iconPath,
-            height: 50,
-          ),
-          const SizedBox(height: 8),
-          Text(
-            title,
-            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-          ),
-        ],
+    return GestureDetector(
+      onTap: () {
+        if (title == "Cuci Aja") {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => const PriceListOrderPage()),
+          );
+        }
+      },
+      child: Container(
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(10),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.grey.withOpacity(0.2),
+              spreadRadius: 2,
+              blurRadius: 5,
+              offset: const Offset(0, 3),
+            ),
+          ],
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Image.asset(
+              iconPath,
+              height: 50,
+            ),
+            const SizedBox(height: 8),
+            Text(
+              title,
+              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            ),
+          ],
+        ),
       ),
     );
   }

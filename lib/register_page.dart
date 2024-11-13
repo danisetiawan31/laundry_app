@@ -38,7 +38,7 @@ class _RegisterPageState extends State<RegisterPage> {
       Navigator.of(context).pushReplacement(
         MaterialPageRoute(
             builder: (context) =>
-                UserHomePage()), // Ganti sesuai halaman beranda Anda
+                const UserHomePage()), // Ganti sesuai halaman beranda Anda
       );
     } catch (e) {
       setState(() {
