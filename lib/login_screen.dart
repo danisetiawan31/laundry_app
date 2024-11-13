@@ -41,11 +41,11 @@ class _LoginScreenState extends State<LoginScreen> {
           String role = userData['role'];
           if (role == 'user') {
             Navigator.of(context).pushReplacement(
-              MaterialPageRoute(builder: (context) => UserHomePage()),
+              MaterialPageRoute(builder: (context) => const UserHomePage()),
             );
           } else if (role == 'owner') {
             Navigator.of(context).pushReplacement(
-              MaterialPageRoute(builder: (context) => OwnerHomePage()),
+              MaterialPageRoute(builder: (context) => const OwnerHomePage()),
             );
           }
         } else {
@@ -187,7 +187,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           Navigator.of(context).push(
                             MaterialPageRoute(
                                 builder: (context) =>
-                                    RegisterPage()), // Arahkan ke RegisterPage
+                                    const RegisterPage()), // Arahkan ke RegisterPage
                           );
                         },
                         child: const Text(

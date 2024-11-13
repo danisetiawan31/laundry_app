@@ -2,6 +2,10 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
+// Import halaman lainnya
+import 'payment_page.dart';
+import 'chat_page.dart'; // Pastikan ChatPage diimport di sini
+
 class UserHomePage extends StatefulWidget {
   const UserHomePage({super.key});
 
@@ -11,6 +15,7 @@ class UserHomePage extends StatefulWidget {
 
 class _UserHomePageState extends State<UserHomePage> {
   String? selectedName;
+  int _selectedIndex = 0; // Untuk melacak index navigasi
 
   @override
   void initState() {
@@ -33,6 +38,34 @@ class _UserHomePageState extends State<UserHomePage> {
       }
     } catch (e) {
       print("Error fetching user name: $e");
+    }
+  }
+
+  void _onItemTapped(int index) {
+    setState(() {
+      _selectedIndex = index;
+    });
+
+    if (index == 0) {
+      // Jika "Home" ditekan, cek apakah sudah di UserHomePage
+      if (_selectedIndex != 0) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const UserHomePage()),
+        );
+      }
+    } else if (index == 1) {
+      // Pindah ke halaman "Order" jika index 1 dipilih
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => PaymentPage()),
+      );
+    } else if (index == 2) {
+      // Pindah ke halaman "Chat" jika index 2 dipilih
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => const ChatPage()),
+      );
     }
   }
 
@@ -124,9 +157,9 @@ class _UserHomePageState extends State<UserHomePage> {
                     ),
                     children: [
                       serviceCard('Cuci Aja', 'img2.jpg'), // Path ikon layanan
-                      serviceCard('Cuci Setrika', 'assets/iron_icon.png'),
-                      serviceCard('Cuci Bed Cover', 'assets/bed_icon.png'),
-                      serviceCard('Cuci Gorden', 'assets/curtain_icon.png'),
+                      serviceCard('Cuci Setrika', 'iron.png'),
+                      serviceCard('Cuci Bed Cover', 'bed.png'),
+                      serviceCard('Cuci Gorden', 'carpet.png'),
                     ],
                   ),
                 ],
@@ -140,6 +173,8 @@ class _UserHomePageState extends State<UserHomePage> {
         selectedItemColor: Colors.blue,
         unselectedItemColor: Colors.grey,
         showUnselectedLabels: true,
+        currentIndex: _selectedIndex,
+        onTap: _onItemTapped,
         items: const [
           BottomNavigationBarItem(
             icon: Icon(Icons.home),
