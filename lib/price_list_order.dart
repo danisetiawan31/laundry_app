@@ -1,180 +1,116 @@
 import 'package:flutter/material.dart';
 
-void main() => runApp(LaundryApp());
+class PriceListOrderPage extends StatefulWidget {
+  const PriceListOrderPage({Key? key}) : super(key: key);
 
-class LaundryApp extends StatelessWidget {
   @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      home: LaundryHomePage(),
-    );
-  }
+  _PriceListOrderPageState createState() => _PriceListOrderPageState();
 }
 
-class LaundryHomePage extends StatelessWidget {
+class _PriceListOrderPageState extends State<PriceListOrderPage> {
+  final Map<String, int> _items = {
+    "Kaos": 0,
+    "Kemeja": 0,
+    "Celana Pendek": 0,
+    "Celana Panjang (Jeans)": 0,
+    "Jaket": 0
+  };
+
+  final Map<String, String> _weights = {
+    "Kaos": "250 Gram / Pcs",
+    "Kemeja": "300 Gram / Pcs",
+    "Celana Pendek": "300 Gram / Pcs",
+    "Celana Panjang (Jeans)": "800 Gram / Pcs",
+    "Jaket": "1 Kg / Pcs"
+  };
+
+  void _increment(String item) {
+    setState(() {
+      _items[item] = _items[item]! + 1;
+    });
+  }
+
+  void _decrement(String item) {
+    setState(() {
+      if (_items[item]! > 0) {
+        _items[item] = _items[item]! - 1;
+      }
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("Price List Order"),
+        title: const Text("Price List Order"),
         backgroundColor: Colors.blue,
       ),
-      body: Column(
-        children: [
-          // Gambar Header
-          Stack(
-            children: [
-              Image.asset(
-                'assets/laundry.jpg', // Ganti dengan gambar kamu
-                width: double.infinity,
-                height: 200,
-                fit: BoxFit.cover,
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              "Cuci Aja",
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 16),
+            Expanded(
+              child: ListView.builder(
+                itemCount: _items.length,
+                itemBuilder: (context, index) {
+                  String key = _items.keys.elementAt(index);
+                  return Card(
+                    margin: const EdgeInsets.symmetric(vertical: 8.0),
+                    child: ListTile(
+                      leading: Icon(Icons.shopping_cart_outlined),
+                      title: Text(key),
+                      subtitle: Text(_weights[key]!),
+                      trailing: SizedBox(
+                        width: 120,
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          children: [
+                            IconButton(
+                              icon: const Icon(Icons.remove),
+                              onPressed: () => _decrement(key),
+                            ),
+                            Text(
+                              _items[key].toString(),
+                              style: const TextStyle(fontSize: 18),
+                            ),
+                            IconButton(
+                              icon: const Icon(Icons.add),
+                              onPressed: () => _increment(key),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  );
+                },
               ),
-              Positioned(
-                bottom: 10,
-                left: 10,
-                child: Text(
-                  'PRICE LIST ORDER',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
+            ),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: () {
+                  // Tambahkan logika untuk memproses pesanan
+                  Navigator.pop(context); // Kembali ke halaman sebelumnya
+                },
+                style: ElevatedButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
                   ),
                 ),
+                child: const Text(
+                  "Pesan Sekarang",
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                ),
               ),
-            ],
-          ),
-          // Tab Kategori
-          Container(
-            color: Colors.blue[100],
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: [
-                TabItem(title: 'Cuci Aja', isSelected: true),
-                TabItem(title: 'Cuci Setrika'),
-                TabItem(title: 'Cuci Bed Cover'),
-                TabItem(title: 'Cuci Only'),
-              ],
             ),
-          ),
-          // List Item
-          Expanded(
-            child: ListView(
-              children: [
-                LaundryItem(
-                  title: "Kaos",
-                  weight: "250 Gram / Pcs",
-                  quantity: 10,
-                ),
-                LaundryItem(
-                  title: "Kemeja",
-                  weight: "300 Gram / Pcs",
-                  quantity: 5,
-                ),
-                LaundryItem(
-                  title: "Celana Pendek",
-                  weight: "300 Gram / Pcs",
-                  quantity: 0,
-                ),
-                LaundryItem(
-                  title: "Celana Panjang (Jeans)",
-                  weight: "800 Gram / Pcs",
-                  quantity: 1,
-                ),
-                LaundryItem(
-                  title: "Jaket",
-                  weight: "500 Gram / Pcs",
-                  quantity: 0,
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-      bottomNavigationBar: BottomNavigationBar(
-        items: [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home),
-            label: 'Home',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.shopping_cart),
-            label: 'Order',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.history),
-            label: 'History',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.person),
-            label: 'Profile',
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class TabItem extends StatelessWidget {
-  final String title;
-  final bool isSelected;
-
-  const TabItem({required this.title, this.isSelected = false});
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 10.0),
-      child: Text(
-        title,
-        style: TextStyle(
-          color: isSelected ? Colors.blue : Colors.black,
-          fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-        ),
-      ),
-    );
-  }
-}
-
-class LaundryItem extends StatelessWidget {
-  final String title;
-  final String weight;
-  final int quantity;
-
-  const LaundryItem({
-    required this.title,
-    required this.weight,
-    required this.quantity,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 5.0),
-      child: Card(
-        elevation: 2,
-        child: ListTile(
-          leading: Icon(Icons.local_laundry_service, color: Colors.blue),
-          title: Text(title),
-          subtitle: Text(weight),
-          trailing: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              IconButton(
-                onPressed: () {},
-                icon: Icon(Icons.remove_circle, color: Colors.red),
-              ),
-              Text(
-                '$quantity',
-                style: TextStyle(fontSize: 16),
-              ),
-              IconButton(
-                onPressed: () {},
-                icon: Icon(Icons.add_circle, color: Colors.green),
-              ),
-            ],
-          ),
+          ],
         ),
       ),
     );
