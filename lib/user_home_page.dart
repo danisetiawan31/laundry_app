@@ -7,6 +7,7 @@ import 'package:laundry_app/price_list_order.dart';
 import 'payment_page.dart';
 import 'chat_page.dart';
 import 'user_history.dart';
+import 'profil.dart'; // Import halaman ProfilePage
 
 class UserHomePage extends StatefulWidget {
   const UserHomePage({super.key});
@@ -67,7 +68,13 @@ class _UserHomePageState extends State<UserHomePage> {
     } else if (index == 3) {
       Navigator.push(
         context,
-        MaterialPageRoute(builder: (context) => OrderHistoryPage()),
+        MaterialPageRoute(builder: (context) => const OrderHistoryPage()),
+      );
+    } else if (index == 4) {
+      // Navigasi ke ProfilePage
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => const ProfilePage()),
       );
     }
   }
@@ -200,7 +207,7 @@ class _UserHomePageState extends State<UserHomePage> {
         if (title == "Cuci Aja") {
           Navigator.push(
             context,
-            MaterialPageRoute(builder: (context) => const PriceListOrderPage()),
+            MaterialPageRoute(builder: (context) => const DeliveryOptionPage()),
           );
         }
       },
