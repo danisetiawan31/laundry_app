@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class PickupDetailPage extends StatefulWidget {
   const PickupDetailPage({Key? key}) : super(key: key);
@@ -9,15 +10,35 @@ class PickupDetailPage extends StatefulWidget {
 
 class _PickupDetailPageState extends State<PickupDetailPage> {
   int selectedPickupDateIndex = -1;
-  int selectedPickupTimeIndex = -1;
   int selectedDeliveryDateIndex = -1;
+  String customerName = "";
+  String pickupTime = ""; // Variabel untuk menyimpan waktu penjemputan
 
   final List<DateTime> decemberDates = List.generate(
     31,
     (index) => DateTime(2024, 12, index + 1),
   );
 
-  final List<String> pickupTimes = ["12.00", "13.00", "14.00", "15.00"];
+  String _getDayName(int weekday) {
+    switch (weekday) {
+      case DateTime.monday:
+        return "Mon";
+      case DateTime.tuesday:
+        return "Tue";
+      case DateTime.wednesday:
+        return "Wed";
+      case DateTime.thursday:
+        return "Thu";
+      case DateTime.friday:
+        return "Fri";
+      case DateTime.saturday:
+        return "Sat";
+      case DateTime.sunday:
+        return "Sun";
+      default:
+        return "";
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -58,6 +79,19 @@ class _PickupDetailPageState extends State<PickupDetailPage> {
                       ),
                       const Spacer(),
                     ],
+                  ),
+
+                  const SizedBox(height: 20),
+
+                  // Nama Pelanggan
+                  TextField(
+                    decoration: const InputDecoration(
+                      labelText: 'Nama Pelanggan',
+                      border: OutlineInputBorder(),
+                    ),
+                    onChanged: (value) {
+                      customerName = value;
+                    },
                   ),
 
                   const SizedBox(height: 20),
@@ -126,23 +160,38 @@ class _PickupDetailPageState extends State<PickupDetailPage> {
 
                   const SizedBox(height: 20),
 
-                  // Pickup Time (Tanpa Dropdown)
-                  _buildScrollableSectionWithoutDropdown(
-                    title: "Pickup Time",
-                    selectedIndex: selectedPickupTimeIndex,
-                    itemCount: pickupTimes.length,
-                    itemBuilder: (index) {
-                      final time = pickupTimes[index];
-                      return _buildTimeBox(
-                        time: time,
-                        isSelected: selectedPickupTimeIndex == index,
-                        onTap: () {
-                          setState(() {
-                            selectedPickupTimeIndex = index;
-                          });
-                        },
-                      );
-                    },
+                  // Pickup Time (Diinput secara manual)
+                  Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: const Color.fromARGB(255, 243, 243, 243)
+                          .withOpacity(0.8),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: Colors.white, width: 1.5),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          "Pickup Time",
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        const SizedBox(height: 10),
+                        TextField(
+                          decoration: const InputDecoration(
+                            labelText: 'Input Pickup Time (e.g., 12:00)',
+                            border: OutlineInputBorder(),
+                          ),
+                          keyboardType: TextInputType.datetime,
+                          onChanged: (value) {
+                            pickupTime = value;
+                          },
+                        ),
+                      ],
+                    ),
                   ),
 
                   const SizedBox(height: 20),
@@ -178,8 +227,44 @@ class _PickupDetailPageState extends State<PickupDetailPage> {
                           borderRadius: BorderRadius.circular(12),
                         ),
                       ),
-                      onPressed: () {
-                        // Tambahkan aksi untuk konfirmasi
+                      onPressed: () async {
+                        if (selectedPickupDateIndex == -1 ||
+                            pickupTime.isEmpty || // Validasi pickupTime
+                            selectedDeliveryDateIndex == -1 ||
+                            customerName.isEmpty) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                                content: Text("Please complete all fields!")),
+                          );
+                          return;
+                        }
+
+                        final orderData = {
+                          'customer_name': customerName,
+                          'pickup_date': decemberDates[selectedPickupDateIndex]
+                              .toIso8601String(),
+                          'pickup_time': pickupTime, // Masukkan pickupTime
+                          'delivery_date':
+                              decemberDates[selectedDeliveryDateIndex]
+                                  .toIso8601String(),
+                          'status': 'Belum Diproses',
+                        };
+
+                        try {
+                          await FirebaseFirestore.instance
+                              .collection('orders')
+                              .add(orderData);
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                                content: Text(
+                                    "Order has been successfully created!")),
+                          );
+                          Navigator.pop(context);
+                        } catch (e) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text("Error: ${e.toString()}")),
+                          );
+                        }
                       },
                       child: const Text(
                         "KONFIRMASI",
@@ -199,7 +284,6 @@ class _PickupDetailPageState extends State<PickupDetailPage> {
     );
   }
 
-  // Bagian dengan dropdown (Pickup Date dan Delivery Date)
   Widget _buildScrollableSectionWithDropdown({
     required String title,
     required int selectedIndex,
@@ -216,7 +300,6 @@ class _PickupDetailPageState extends State<PickupDetailPage> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Header dengan dropdown
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -235,51 +318,10 @@ class _PickupDetailPageState extends State<PickupDetailPage> {
                     child: Text("December 2024"),
                   ),
                 ],
-                onChanged: (value) {
-                  // Tidak ada aksi, hanya dropdown statis
-                },
+                onChanged: (value) {},
                 underline: const SizedBox(),
               ),
             ],
-          ),
-          const SizedBox(height: 10),
-          SizedBox(
-            height: 100,
-            child: ListView.builder(
-              scrollDirection: Axis.horizontal,
-              itemCount: itemCount,
-              itemBuilder: (context, index) => itemBuilder(index),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  // Bagian tanpa dropdown (Pickup Time)
-  Widget _buildScrollableSectionWithoutDropdown({
-    required String title,
-    required int selectedIndex,
-    required int itemCount,
-    required Widget Function(int) itemBuilder,
-  }) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: const Color.fromARGB(255, 243, 243, 243).withOpacity(0.8),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.white, width: 1.5),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Header tanpa dropdown
-          Text(
-            title,
-            style: const TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
-            ),
           ),
           const SizedBox(height: 10),
           SizedBox(
@@ -304,94 +346,36 @@ class _PickupDetailPageState extends State<PickupDetailPage> {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        width: 60,
-        margin: const EdgeInsets.only(right: 10),
-        padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 6),
+        margin: const EdgeInsets.symmetric(horizontal: 4),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
         decoration: BoxDecoration(
-          color: isSelected ? Colors.blue : Colors.white.withOpacity(0.8),
-          borderRadius: BorderRadius.circular(10),
-          border: Border.all(
-            color: isSelected ? Colors.blue : Colors.grey,
-            width: 1.5,
-          ),
+          color: isSelected ? Colors.blue : Colors.white,
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(color: Colors.blue, width: 1.5),
         ),
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
+          mainAxisSize: MainAxisSize.min,
           children: [
             Text(
               dayName,
               style: TextStyle(
                 fontSize: 14,
-                color: isSelected ? Colors.white : Colors.black,
                 fontWeight: FontWeight.bold,
+                color: isSelected ? Colors.white : Colors.blue,
               ),
             ),
             const SizedBox(height: 4),
             Text(
               "${date.day}",
               style: TextStyle(
-                fontSize: 16,
-                color: isSelected ? Colors.white : Colors.black,
+                fontSize: 14,
                 fontWeight: FontWeight.bold,
+                color: isSelected ? Colors.white : Colors.blue,
               ),
             ),
           ],
         ),
       ),
     );
-  }
-
-  Widget _buildTimeBox({
-    required String time,
-    required bool isSelected,
-    required VoidCallback onTap,
-  }) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        width: 80,
-        margin: const EdgeInsets.only(right: 10),
-        padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 6),
-        decoration: BoxDecoration(
-          color: isSelected ? Colors.blue : Colors.white.withOpacity(0.8),
-          borderRadius: BorderRadius.circular(10),
-          border: Border.all(
-            color: isSelected ? Colors.blue : Colors.grey,
-            width: 1.5,
-          ),
-        ),
-        child: Center(
-          child: Text(
-            time,
-            style: TextStyle(
-              fontSize: 16,
-              color: isSelected ? Colors.white : Colors.black,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  String _getDayName(int weekday) {
-    switch (weekday) {
-      case DateTime.monday:
-        return "Mon";
-      case DateTime.tuesday:
-        return "Tue";
-      case DateTime.wednesday:
-        return "Wed";
-      case DateTime.thursday:
-        return "Thu";
-      case DateTime.friday:
-        return "Fri";
-      case DateTime.saturday:
-        return "Sat";
-      case DateTime.sunday:
-        return "Sun";
-      default:
-        return "";
-    }
   }
 }
