@@ -1,7 +1,8 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:laundry_app/owner_home_page.dart';
+import 'package:laundry_app/Order_view.dart';
+import 'package:laundry_app/dashboard_page.dart';
 import 'package:laundry_app/user_home_page.dart';
 
 class LoginPage extends StatefulWidget {
@@ -40,7 +41,7 @@ class _LoginPageState extends State<LoginPage> {
       } else if (role == 'owner') {
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (context) => OwnerOrderPage()),
+          MaterialPageRoute(builder: (context) => DashboardPage()),
         );
       }
     } catch (e) {
