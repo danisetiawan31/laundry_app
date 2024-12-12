@@ -207,7 +207,10 @@ class _UserHomePageState extends State<UserHomePage> {
         if (title == "Cuci Aja") {
           Navigator.push(
             context,
-            MaterialPageRoute(builder: (context) => const PickupDetailPage()),
+            MaterialPageRoute(
+                builder: (context) => const PickupDetailPage(
+                      username: '',
+                    )),
           );
         }
       },

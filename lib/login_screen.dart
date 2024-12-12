@@ -45,7 +45,7 @@ class _LoginScreenState extends State<LoginScreen> {
             );
           } else if (role == 'owner') {
             Navigator.of(context).pushReplacement(
-              MaterialPageRoute(builder: (context) => OwnerOrderPage()),
+              MaterialPageRoute(builder: (context) => OwnerHomePage()),
             );
           }
         } else {
