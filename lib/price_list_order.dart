@@ -19,15 +19,13 @@ class _PickupDetailPageState extends State<PickupDetailPage> {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
-  final List<DateTime> decemberDates = List.generate(
-    31,
-    (index) => DateTime(2024, 12, index + 1),
-  );
+  List<DateTime> decemberDates = [];
 
   @override
   void initState() {
     super.initState();
     _fetchUserData();
+    _initializeDates();
   }
 
   Future<void> _fetchUserData() async {
@@ -49,6 +47,30 @@ class _PickupDetailPageState extends State<PickupDetailPage> {
         SnackBar(content: Text("Error fetching user data: $e")),
       );
     }
+  }
+
+  void _initializeDates() {
+    final today = DateTime.now();
+    final allDates = List.generate(
+      31,
+      (index) => DateTime(2024, 12, index + 1),
+    )
+        .where((date) => date.isAfter(today.subtract(const Duration(days: 1))))
+        .toList();
+
+    final todayIndex = allDates.indexWhere((date) =>
+        date.year == today.year &&
+        date.month == today.month &&
+        date.day == today.day);
+
+    if (todayIndex != -1) {
+      final todayDate = allDates.removeAt(todayIndex);
+      allDates.insert(0, todayDate);
+    }
+
+    setState(() {
+      decemberDates = allDates;
+    });
   }
 
   String _getDayName(int weekday) {

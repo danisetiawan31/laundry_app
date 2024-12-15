@@ -27,7 +27,6 @@ class _OwnerOrderViewState extends State<OwnerOrderView> {
           IconButton(
             icon: const Icon(Icons.notifications),
             onPressed: () {
-              // Navigasi ke halaman Accorder
               Navigator.push(
                 context,
                 MaterialPageRoute(
@@ -40,7 +39,6 @@ class _OwnerOrderViewState extends State<OwnerOrderView> {
       ),
       body: Column(
         children: [
-          // Header dengan Filter Status
           Padding(
             padding: const EdgeInsets.all(16.0),
             child: Row(
@@ -113,6 +111,9 @@ class _OwnerOrderViewState extends State<OwnerOrderView> {
                       onStatusChange: () {
                         _showStatusDialog(context, order.id, order['status']);
                       },
+                      onDelete: () {
+                        _showDeleteDialog(context, order.id);
+                      },
                     );
                   },
                 );
@@ -124,7 +125,6 @@ class _OwnerOrderViewState extends State<OwnerOrderView> {
     );
   }
 
-  // Fungsi untuk menampilkan dialog perubahan status
   Future<void> _showStatusDialog(
       BuildContext context, String orderId, String currentStatus) async {
     final newStatus = await showDialog<String>(
@@ -164,7 +164,6 @@ class _OwnerOrderViewState extends State<OwnerOrderView> {
     }
   }
 
-  // Fungsi untuk memperbarui status di Firestore
   Future<void> updateOrderStatus(String orderId, String newStatus) async {
     try {
       await FirebaseFirestore.instance
@@ -174,6 +173,45 @@ class _OwnerOrderViewState extends State<OwnerOrderView> {
       print('Status berhasil diperbarui.');
     } catch (e) {
       print('Gagal memperbarui status: $e');
+    }
+  }
+
+  void _showDeleteDialog(BuildContext context, String orderId) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Hapus Pesanan'),
+          content: const Text('Apakah Anda yakin ingin menghapus pesanan ini?'),
+          actions: [
+            TextButton(
+              child: const Text('Batal'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+            TextButton(
+              child: const Text('Hapus'),
+              onPressed: () {
+                Navigator.of(context).pop();
+                deleteOrder(orderId);
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Future<void> deleteOrder(String orderId) async {
+    try {
+      await FirebaseFirestore.instance
+          .collection('orders')
+          .doc(orderId)
+          .delete();
+      print('Pesanan berhasil dihapus.');
+    } catch (e) {
+      print('Gagal menghapus pesanan: $e');
     }
   }
 }
@@ -186,6 +224,7 @@ class OwnerOrderCard extends StatelessWidget {
   final String time;
   final String status;
   final VoidCallback onStatusChange;
+  final VoidCallback onDelete;
 
   const OwnerOrderCard({
     Key? key,
@@ -196,13 +235,13 @@ class OwnerOrderCard extends StatelessWidget {
     required this.time,
     required this.status,
     required this.onStatusChange,
+    required this.onDelete,
   }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () {
-        // Navigasi ke halaman detail pesanan
         Navigator.push(
           context,
           MaterialPageRoute(
@@ -227,57 +266,46 @@ class OwnerOrderCard extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // ID Pesanan
-              Text(
-                '#$orderId',
-                style: const TextStyle(
-                  fontWeight: FontWeight.bold,
-                  color: Colors.grey,
-                ),
-              ),
+              Text('#$orderId',
+                  style: const TextStyle(
+                      fontWeight: FontWeight.bold, color: Colors.grey)),
               const SizedBox(height: 8),
-              // Nama Pelanggan
-              Text(
-                customerName,
-                style: const TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 16,
-                ),
-              ),
+              Text(customerName,
+                  style: const TextStyle(
+                      fontWeight: FontWeight.bold, fontSize: 16)),
               const SizedBox(height: 4),
-              // Alamat
-              Text(
-                address,
-                style: const TextStyle(fontSize: 14),
-              ),
+              Text(address, style: const TextStyle(fontSize: 14)),
               const SizedBox(height: 4),
-              // Tanggal dan Waktu
-              Text(
-                '$date, $time',
-                style: const TextStyle(color: Colors.black54),
-              ),
+              Text('$date, $time',
+                  style: const TextStyle(color: Colors.black54)),
               const SizedBox(height: 12),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  // Status Pesanan
-                  Text(
-                    status,
-                    style: TextStyle(
-                      color: _getStatusColor(status),
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  // Tombol Ubah Status
-                  ElevatedButton(
-                    onPressed: onStatusChange,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.blue,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
+                  Text(status,
+                      style: TextStyle(
+                          color: _getStatusColor(status),
+                          fontWeight: FontWeight.bold)),
+                  Row(
+                    children: [
+                      ElevatedButton(
+                        onPressed: onStatusChange,
+                        style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.blue,
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10))),
+                        child: const Text('Ubah Status'),
                       ),
-                    ),
-                    child: const Text('Ubah Status'),
+                      const SizedBox(width: 8),
+                      ElevatedButton(
+                        onPressed: onDelete,
+                        style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.red,
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10))),
+                        child: const Text('Hapus'),
+                      ),
+                    ],
                   ),
                 ],
               ),

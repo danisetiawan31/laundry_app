@@ -1,10 +1,10 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:laundry_app/dashboard_page.dart';
 import 'user_home_page.dart';
 import 'Order_view.dart';
-import 'register_page.dart'; // Import halaman Register Page
+import 'register_page.dart';
+import 'owner_home_page.dart'; // Import halaman Register Page
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -46,7 +46,7 @@ class _LoginScreenState extends State<LoginScreen> {
             );
           } else if (role == 'owner') {
             Navigator.of(context).pushReplacement(
-              MaterialPageRoute(builder: (context) => DashboardPage()),
+              MaterialPageRoute(builder: (context) => OwnerHomePage()),
             );
           }
         } else {

@@ -22,6 +22,10 @@ class OrderDetailView extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () => Navigator.of(context).pop(),
+        ),
         title: const Text('Detail Pesanan'),
         backgroundColor: Colors.blue,
       ),
@@ -29,47 +33,95 @@ class OrderDetailView extends StatelessWidget {
         padding: const EdgeInsets.all(16.0),
         child: ListView(
           children: [
-            Text(
-              '#$orderId',
-              style: const TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 20,
-                color: Colors.grey,
+            Hero(
+              tag: 'orderId-$orderId',
+              child: Text(
+                '#$orderId',
+                style: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 20,
+                  color: Colors.grey,
+                ),
               ),
             ),
             const SizedBox(height: 16),
-            Text(
-              'Nama Pelanggan: $customerName',
-              style: const TextStyle(fontSize: 16),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              'Alamat: $address',
-              style: const TextStyle(fontSize: 16),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              'Tanggal: $date',
-              style: const TextStyle(fontSize: 16),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              'Waktu: $time',
-              style: const TextStyle(fontSize: 16),
+            Card(
+              elevation: 2,
+              margin: const EdgeInsets.symmetric(vertical: 8),
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Nama Pelanggan: ${customerName.isNotEmpty ? customerName : 'Tidak tersedia'}',
+                      style: const TextStyle(fontSize: 16),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      'Alamat: ${address.isNotEmpty ? address : 'Tidak tersedia'}',
+                      style: const TextStyle(fontSize: 16),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      'Tanggal: ${date.isNotEmpty ? date : 'Tidak tersedia'}',
+                      style: const TextStyle(fontSize: 16),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      'Waktu: ${time.isNotEmpty ? time : 'Tidak tersedia'}',
+                      style: const TextStyle(fontSize: 16),
+                    ),
+                  ],
+                ),
+              ),
             ),
             const SizedBox(height: 16),
-            Text(
-              'Status: $status',
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 16,
-                color: _getStatusColor(status),
-              ),
+            Row(
+              children: [
+                const Text(
+                  'Status: ',
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                ),
+                Chip(
+                  label: Text(
+                    status,
+                    style: const TextStyle(color: Colors.white),
+                  ),
+                  backgroundColor: _getStatusColor(status),
+                ),
+              ],
             ),
             const SizedBox(height: 32),
             ElevatedButton(
               onPressed: () {
-                // Anda bisa menambahkan logika untuk mengubah status pesanan
+                showDialog(
+                  context: context,
+                  builder: (BuildContext context) {
+                    return AlertDialog(
+                      title: const Text('Input Harga'),
+                      content: TextField(
+                        keyboardType: TextInputType.number,
+                        decoration: const InputDecoration(
+                          hintText: 'Masukkan harga',
+                        ),
+                      ),
+                      actions: [
+                        TextButton(
+                          onPressed: () => Navigator.of(context).pop(),
+                          child: const Text('Batal'),
+                        ),
+                        ElevatedButton(
+                          onPressed: () {
+                            // Tambahkan logika untuk menyimpan harga
+                            Navigator.of(context).pop();
+                          },
+                          child: const Text('Simpan'),
+                        ),
+                      ],
+                    );
+                  },
+                );
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.blue,
@@ -91,6 +143,8 @@ class OrderDetailView extends StatelessWidget {
         return Colors.orange;
       case 'Selesai':
         return Colors.green;
+      case 'Dibatalkan':
+        return Colors.red;
       default:
         return Colors.blue;
     }
