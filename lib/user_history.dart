@@ -139,7 +139,7 @@ class _OrderHistoryPageState extends State<OrderHistoryPage> {
           ),
           BottomNavigationBarItem(
             icon: _buildIcon(Icons.shopping_bag, _selectedIndex == 1),
-            label: 'Order',
+            label: 'Ordger',
           ),
           BottomNavigationBarItem(
             icon: _buildIcon(Icons.chat, _selectedIndex == 2),
