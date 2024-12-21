@@ -5,6 +5,7 @@ import 'owner_notif.dart'; // Import NotificationsPage
 import 'owner_order.dart'; // Import OwnerOrderView
 import 'owner_order_view.dart'; // Import AddOrderPage
 import 'owner_keuangan.dart';
+import 'owner_profile.dart';
 
 class OwnerHomePage extends StatefulWidget {
   const OwnerHomePage({super.key});
@@ -177,6 +178,11 @@ class _OwnerHomePageState extends State<OwnerHomePage> {
             Navigator.push(
               context,
               MaterialPageRoute(builder: (context) => const OwnerOrderView()),
+            );
+          } else if (index == 3) {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => ProfilePage()),
             );
           }
           if (index == 2) {
