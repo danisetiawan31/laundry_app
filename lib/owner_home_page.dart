@@ -1,8 +1,9 @@
-import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
+import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'owner_notif.dart'; // Import NotificationsPage
-import 'owner_order.dart'; // Import AddOrderPage
+import 'owner_order.dart'; // Import OwnerOrderView
+import 'owner_order_view.dart'; // Import AddOrderPage
 
 class OwnerHomePage extends StatefulWidget {
   const OwnerHomePage({super.key});
@@ -74,7 +75,8 @@ class _OwnerHomePageState extends State<OwnerHomePage> {
               // Aksi untuk menampilkan notifikasi, bisa diarahkan ke halaman notifikasi
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => NotificationsPage()),
+                MaterialPageRoute(
+                    builder: (context) => const NotificationsPage()),
               );
             },
           ),
@@ -98,7 +100,6 @@ class _OwnerHomePageState extends State<OwnerHomePage> {
               ],
             ),
           ),
-          // Menyusun bagian statistik keuangan dengan jarak lebih rapat
           Padding(
             padding:
                 const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
@@ -119,16 +120,10 @@ class _OwnerHomePageState extends State<OwnerHomePage> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // Kotak Statistik Keuangan
                       data == null || data['financeStats'].isEmpty
-                          ? _buildEmptyFinanceChart() // Menampilkan pesan jika data kosong
-                          : _buildFinanceChart(data['financeStats'] ??
-                              {}), // Menampilkan grafik jika data ada
-
-                      // Menambahkan Kotak Status Pesanan
-                      const SizedBox(
-                          height:
-                              20), // Jarak antara statistik dan status pesanan
+                          ? _buildEmptyFinanceChart()
+                          : _buildFinanceChart(data['financeStats'] ?? {}),
+                      const SizedBox(height: 20),
                       _buildOrderStatusCard(),
                     ],
                   ),
@@ -137,6 +132,17 @@ class _OwnerHomePageState extends State<OwnerHomePage> {
             ),
           ),
         ],
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          // Navigasi ke halaman OwnerOrder
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => const AddOrderPage()),
+          );
+        },
+        backgroundColor: Colors.blue,
+        child: const Icon(Icons.add, color: Colors.white),
       ),
       bottomNavigationBar: BottomNavigationBar(
         items: const [
@@ -164,6 +170,14 @@ class _OwnerHomePageState extends State<OwnerHomePage> {
           setState(() {
             _currentIndex = index;
           });
+
+          if (index == 1) {
+            // Pastikan navigasi ke halaman pesanan
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const OwnerOrderView()),
+            );
+          }
         },
       ),
       backgroundColor: const Color(0xFFF7F4FB),
@@ -292,7 +306,6 @@ class _OwnerHomePageState extends State<OwnerHomePage> {
     );
   }
 
-  // Menambahkan kotak Status Pesanan
   Widget _buildOrderStatusCard() {
     return Container(
       padding: const EdgeInsets.all(16.0),
@@ -315,7 +328,6 @@ class _OwnerHomePageState extends State<OwnerHomePage> {
             style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
           ),
           const SizedBox(height: 10),
-          // Keterangan status pesanan, berdasarkan data dari Firestore
           _buildStatusRow(
               'Siap Diambil', orderStatusCount['Siap Diambil'].toString()),
           _buildStatusRow('Diproses', orderStatusCount['Diproses'].toString()),
@@ -324,36 +336,12 @@ class _OwnerHomePageState extends State<OwnerHomePage> {
           _buildStatusRow('Selesai', orderStatusCount['Selesai'].toString()),
           _buildStatusRow(
               'Cancelled', orderStatusCount['Cancelled'].toString()),
-
-          // Menambahkan tombol "Tambah Pesanan" di tengah
           const SizedBox(height: 20),
-          Center(
-            child: ElevatedButton(
-              onPressed: () {
-                // Logika untuk menambah pesanan, misalnya navigasi ke form tambah pesanan
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => AddOrderPage()),
-                );
-              },
-              style: ElevatedButton.styleFrom(
-                foregroundColor: Colors.white,
-                backgroundColor: Colors.blue,
-                padding: const EdgeInsets.symmetric(
-                    vertical: 15.0, horizontal: 135.0),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8.0),
-                ),
-              ),
-              child: Text('Tambah Pesanan'),
-            ),
-          ),
         ],
       ),
     );
   }
 
-  // Membuat row untuk status pesanan
   Widget _buildStatusRow(String title, String count) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4.0),

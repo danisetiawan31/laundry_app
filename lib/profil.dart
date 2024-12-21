@@ -19,6 +19,7 @@ class _ProfilePageState extends State<ProfilePage> {
   final TextEditingController phoneController = TextEditingController();
   final TextEditingController profileImageUrlController =
       TextEditingController();
+  final TextEditingController addressController = TextEditingController();
 
   @override
   void initState() {
@@ -39,6 +40,7 @@ class _ProfilePageState extends State<ProfilePage> {
             nameController.text = userData?['name'] ?? '';
             phoneController.text = userData?['phone'] ?? '';
             profileImageUrlController.text = userData?['profileImage'] ?? '';
+            addressController.text = userData?['address'] ?? '';
           });
         } else {
           // Jika dokumen pengguna belum ada
@@ -76,6 +78,9 @@ class _ProfilePageState extends State<ProfilePage> {
       if (profileImageUrlController.text.trim().isNotEmpty) {
         updateData['profileImage'] = profileImageUrlController.text.trim();
       }
+      if (addressController.text.trim().isNotEmpty) {
+        updateData['address'] = addressController.text.trim();
+      }
 
       await _firestore
           .collection('users')
@@ -87,6 +92,7 @@ class _ProfilePageState extends State<ProfilePage> {
         userData?['name'] = nameController.text.trim();
         userData?['phone'] = phoneController.text.trim();
         userData?['profileImage'] = profileImageUrlController.text.trim();
+        userData?['address'] = addressController.text.trim();
       });
 
       ScaffoldMessenger.of(context).showSnackBar(
@@ -168,6 +174,11 @@ class _ProfilePageState extends State<ProfilePage> {
                           icon: Icons.email,
                           label: userData?['email'] ?? 'Email not available',
                         ),
+                        ProfileItem(
+                          icon: Icons.home,
+                          label:
+                              userData?['address'] ?? 'Address not available',
+                        ),
                       ],
                     ),
                   ),
@@ -200,6 +211,10 @@ class _ProfilePageState extends State<ProfilePage> {
                 decoration:
                     const InputDecoration(labelText: "Profile Image URL"),
                 keyboardType: TextInputType.url,
+              ),
+              TextField(
+                controller: addressController,
+                decoration: const InputDecoration(labelText: "Address"),
               ),
             ],
           ),
