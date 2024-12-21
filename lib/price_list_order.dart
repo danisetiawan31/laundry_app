@@ -3,14 +3,14 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 class PickupDetailPage extends StatefulWidget {
-  const PickupDetailPage({Key? key}) : super(key: key);
+  const PickupDetailPage({super.key, required String username});
 
   @override
   State<PickupDetailPage> createState() => _PickupDetailPageState();
 }
 
 class _PickupDetailPageState extends State<PickupDetailPage> {
-  int selectedPickupDateIndex = -1;
+  int selectedPickupDateIndex = 0; // Default ke hari ini
   int selectedDeliveryDateIndex = -1;
   String customerName = "";
   String pickupTime = "";
@@ -19,13 +19,18 @@ class _PickupDetailPageState extends State<PickupDetailPage> {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
-  List<DateTime> decemberDates = [];
+  late final List<DateTime> allDates = List.generate(
+    31,
+    (index) => DateTime.now().add(Duration(days: index)),
+  );
+
+  late List<DateTime> filteredDeliveryDates = [];
 
   @override
   void initState() {
     super.initState();
     _fetchUserData();
-    _initializeDates();
+    _updateFilteredDeliveryDates(); // Filter delivery dates sesuai default pickup date
   }
 
   Future<void> _fetchUserData() async {
@@ -43,54 +48,58 @@ class _PickupDetailPageState extends State<PickupDetailPage> {
         }
       }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Error fetching user data: $e")),
-      );
+      _showSnackBar("Error fetching user data: $e");
     }
   }
 
-  void _initializeDates() {
-    final today = DateTime.now();
-    final allDates = List.generate(
-      31,
-      (index) => DateTime(2024, 12, index + 1),
-    )
-        .where((date) => date.isAfter(today.subtract(const Duration(days: 1))))
-        .toList();
-
-    final todayIndex = allDates.indexWhere((date) =>
-        date.year == today.year &&
-        date.month == today.month &&
-        date.day == today.day);
-
-    if (todayIndex != -1) {
-      final todayDate = allDates.removeAt(todayIndex);
-      allDates.insert(0, todayDate);
+  void _updateFilteredDeliveryDates() {
+    if (selectedPickupDateIndex != -1) {
+      final selectedPickupDate = allDates[selectedPickupDateIndex];
+      filteredDeliveryDates =
+          allDates.where((date) => date.isAfter(selectedPickupDate)).toList();
+    } else {
+      filteredDeliveryDates = [];
     }
+    setState(() {});
+  }
 
-    setState(() {
-      decemberDates = allDates;
-    });
+  void _showSnackBar(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(message)),
+    );
   }
 
   String _getDayName(int weekday) {
-    switch (weekday) {
-      case DateTime.monday:
-        return "Mon";
-      case DateTime.tuesday:
-        return "Tue";
-      case DateTime.wednesday:
-        return "Wed";
-      case DateTime.thursday:
-        return "Thu";
-      case DateTime.friday:
-        return "Fri";
-      case DateTime.saturday:
-        return "Sat";
-      case DateTime.sunday:
-        return "Sun";
-      default:
-        return "";
+    const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+    return days[weekday - 1];
+  }
+
+  Future<void> _submitOrder() async {
+    if (selectedPickupDateIndex == -1 ||
+        pickupTime.isEmpty ||
+        selectedDeliveryDateIndex == -1 ||
+        customerName.isEmpty ||
+        address.isEmpty) {
+      _showSnackBar("Please complete all fields!");
+      return;
+    }
+
+    final orderData = {
+      'customer_name': customerName,
+      'pickup_date': allDates[selectedPickupDateIndex].toIso8601String(),
+      'pickup_time': pickupTime,
+      'delivery_date':
+          filteredDeliveryDates[selectedDeliveryDateIndex].toIso8601String(),
+      'address': address,
+      'status': 'Belum Diproses',
+    };
+
+    try {
+      await _firestore.collection('orders').add(orderData);
+      _showSnackBar("Order has been successfully created!");
+      Navigator.pop(context);
+    } catch (e) {
+      _showSnackBar("Error: $e");
     }
   }
 
@@ -154,12 +163,12 @@ class _PickupDetailPageState extends State<PickupDetailPage> {
                     },
                   ),
                   const SizedBox(height: 20),
-                  _buildScrollableSectionWithDropdown(
+                  _buildScrollableSection(
                     title: "Pickup Date",
                     selectedIndex: selectedPickupDateIndex,
-                    itemCount: decemberDates.length,
+                    itemCount: allDates.length,
                     itemBuilder: (index) {
-                      final date = decemberDates[index];
+                      final date = allDates[index];
                       return _buildDateBox(
                         date: date,
                         isSelected: selectedPickupDateIndex == index,
@@ -167,49 +176,29 @@ class _PickupDetailPageState extends State<PickupDetailPage> {
                           setState(() {
                             selectedPickupDateIndex = index;
                           });
+                          _updateFilteredDeliveryDates();
                         },
                       );
                     },
                   ),
                   const SizedBox(height: 20),
-                  Container(
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: Colors.grey[100]!,
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: Colors.blue, width: 1.5),
+                  TextField(
+                    decoration: const InputDecoration(
+                      labelText: 'Pickup Time (e.g., 12:00)',
+                      border: OutlineInputBorder(),
                     ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text(
-                          "Pickup Time",
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        const SizedBox(height: 10),
-                        TextField(
-                          decoration: const InputDecoration(
-                            labelText: 'Input Pickup Time (e.g., 12:00)',
-                            border: OutlineInputBorder(),
-                          ),
-                          keyboardType: TextInputType.datetime,
-                          onChanged: (value) {
-                            pickupTime = value;
-                          },
-                        ),
-                      ],
-                    ),
+                    keyboardType: TextInputType.datetime,
+                    onChanged: (value) {
+                      pickupTime = value;
+                    },
                   ),
                   const SizedBox(height: 20),
-                  _buildScrollableSectionWithDropdown(
+                  _buildScrollableSection(
                     title: "Delivery Date",
                     selectedIndex: selectedDeliveryDateIndex,
-                    itemCount: decemberDates.length,
+                    itemCount: filteredDeliveryDates.length,
                     itemBuilder: (index) {
-                      final date = decemberDates[index];
+                      final date = filteredDeliveryDates[index];
                       return _buildDateBox(
                         date: date,
                         isSelected: selectedDeliveryDateIndex == index,
@@ -231,45 +220,7 @@ class _PickupDetailPageState extends State<PickupDetailPage> {
                           borderRadius: BorderRadius.circular(12),
                         ),
                       ),
-                      onPressed: () async {
-                        if (selectedPickupDateIndex == -1 ||
-                            pickupTime.isEmpty ||
-                            selectedDeliveryDateIndex == -1 ||
-                            customerName.isEmpty ||
-                            address.isEmpty) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                                content: Text("Please complete all fields!")),
-                          );
-                          return;
-                        }
-
-                        final orderData = {
-                          'customer_name': customerName,
-                          'pickup_date': decemberDates[selectedPickupDateIndex]
-                              .toIso8601String(),
-                          'pickup_time': pickupTime,
-                          'delivery_date':
-                              decemberDates[selectedDeliveryDateIndex]
-                                  .toIso8601String(),
-                          'address': address,
-                          'status': 'Belum Diproses',
-                        };
-
-                        try {
-                          await _firestore.collection('orders').add(orderData);
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                                content: Text(
-                                    "Order has been successfully created!")),
-                          );
-                          Navigator.pop(context);
-                        } catch (e) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(content: Text("Error: $e")),
-                          );
-                        }
-                      },
+                      onPressed: _submitOrder,
                       child: const Text(
                         "KONFIRMASI",
                         style: TextStyle(
@@ -288,7 +239,7 @@ class _PickupDetailPageState extends State<PickupDetailPage> {
     );
   }
 
-  Widget _buildScrollableSectionWithDropdown({
+  Widget _buildScrollableSection({
     required String title,
     required int selectedIndex,
     required int itemCount,
@@ -297,7 +248,7 @@ class _PickupDetailPageState extends State<PickupDetailPage> {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.grey[100]!,
+        color: Colors.grey[100],
         borderRadius: BorderRadius.circular(12),
         border: Border.all(color: Colors.blue, width: 1.5),
       ),
