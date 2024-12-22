@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:laundry_app/login_screen.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -107,7 +108,10 @@ class _ProfilePageState extends State<ProfilePage> {
 
   Future<void> logout() async {
     await _auth.signOut();
-    Navigator.of(context).pushReplacementNamed('/login');
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => LoginScreen()),
+    );
   }
 
   @override
