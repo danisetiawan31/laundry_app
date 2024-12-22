@@ -128,7 +128,7 @@ class _OwnerHomePageState extends State<OwnerHomePage> {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                          builder: (context) => const NotificationsPage()),
+                          builder: (context) => const OwnerNotifications()),
                     );
                   },
                 ),

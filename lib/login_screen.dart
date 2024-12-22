@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'user_home_page.dart';
 import 'register_page.dart';
+import 'maps.dart';
 import 'owner_home_page.dart'; // Import halaman Register Page
 
 class LoginScreen extends StatefulWidget {
@@ -41,7 +42,7 @@ class _LoginScreenState extends State<LoginScreen> {
           String role = userData['role'];
           if (role == 'user') {
             Navigator.of(context).pushReplacement(
-              MaterialPageRoute(builder: (context) => const UserHomePage()),
+              MaterialPageRoute(builder: (context) => const PickUpMapScreen()),
             );
           } else if (role == 'owner') {
             Navigator.of(context).pushReplacement(
