@@ -20,18 +20,42 @@ class _OwnerOrderViewState extends State<OwnerOrderView> {
     return Scaffold(
       backgroundColor: Colors.grey[200],
       appBar: AppBar(
-        backgroundColor: Colors.blue,
-        title: const Text('Pesanan Pelanggan'),
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        flexibleSpace: Container(
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              colors: [Colors.blueAccent, Colors.lightBlue],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+          ),
+        ),
+        title: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(Icons.local_laundry_service,
+                color: Colors.white, size: 28),
+            const SizedBox(width: 10),
+            const Text(
+              'Pesanan Pelanggan',
+              style: TextStyle(
+                fontSize: 22,
+                fontWeight: FontWeight.bold,
+                letterSpacing: 1.2,
+                color: Colors.white,
+              ),
+            ),
+          ],
+        ),
         centerTitle: true,
         actions: [
           IconButton(
-            icon: const Icon(Icons.notifications),
+            icon: const Icon(Icons.notifications, color: Colors.white),
             onPressed: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(
-                    builder: (context) =>
-                        const Accorder()), // Arahkan ke Accorder.dart
+                MaterialPageRoute(builder: (context) => const Accorder()),
               );
             },
           ),
@@ -41,46 +65,71 @@ class _OwnerOrderViewState extends State<OwnerOrderView> {
         children: [
           Padding(
             padding: const EdgeInsets.all(16.0),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                FilterButton(
-                  label: 'Semua',
-                  isActive: selectedFilter == 'Semua',
-                  onPressed: () {
-                    setState(() {
-                      selectedFilter = 'Semua';
-                    });
-                  },
-                ),
-                FilterButton(
-                  label: 'Diproses',
-                  isActive: selectedFilter == 'Diproses',
-                  onPressed: () {
-                    setState(() {
-                      selectedFilter = 'Diproses';
-                    });
-                  },
-                ),
-                FilterButton(
-                  label: 'Selesai',
-                  isActive: selectedFilter == 'Selesai',
-                  onPressed: () {
-                    setState(() {
-                      selectedFilter = 'Selesai';
-                    });
-                  },
-                ),
-              ],
+            child: SingleChildScrollView(
+              scrollDirection:
+                  Axis.horizontal, // Mengaktifkan scroll horizontal
+              child: Row(
+                children: [
+                  FilterButton(
+                    label: 'Semua',
+                    isActive: selectedFilter == 'Semua',
+                    onPressed: () {
+                      setState(() {
+                        selectedFilter = 'Semua';
+                      });
+                    },
+                  ),
+                  const SizedBox(width: 8),
+                  FilterButton(
+                    label: 'Diproses',
+                    isActive: selectedFilter == 'Diproses',
+                    onPressed: () {
+                      setState(() {
+                        selectedFilter = 'Diproses';
+                      });
+                    },
+                  ),
+                  const SizedBox(width: 8),
+                  FilterButton(
+                    label: 'Selesai',
+                    isActive: selectedFilter == 'Selesai',
+                    onPressed: () {
+                      setState(() {
+                        selectedFilter = 'Selesai';
+                      });
+                    },
+                  ),
+                  const SizedBox(width: 8),
+                  FilterButton(
+                    label: 'Siap Diantar',
+                    isActive: selectedFilter == 'Siap Diantar',
+                    onPressed: () {
+                      setState(() {
+                        selectedFilter = 'Siap Diantar';
+                      });
+                    },
+                  ),
+                  const SizedBox(width: 8),
+                  FilterButton(
+                    label: 'Dibatalkan',
+                    isActive: selectedFilter == 'Dibatalkan',
+                    onPressed: () {
+                      setState(() {
+                        selectedFilter = 'Dibatalkan';
+                      });
+                    },
+                  ),
+                ],
+              ),
             ),
           ),
           Expanded(
             child: StreamBuilder<QuerySnapshot>(
-              stream: orders
-                  .where('status',
-                      isEqualTo:
-                          selectedFilter == 'Semua' ? null : selectedFilter)
-                  .snapshots(),
+              stream: selectedFilter == 'Semua'
+                  ? orders.snapshots()
+                  : orders
+                      .where('status', isEqualTo: selectedFilter)
+                      .snapshots(),
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   return const Center(child: CircularProgressIndicator());
@@ -139,6 +188,12 @@ class _OwnerOrderViewState extends State<OwnerOrderView> {
                 title: const Text('Diproses'),
                 onTap: () {
                   Navigator.of(context).pop('Diproses');
+                },
+              ),
+              ListTile(
+                title: const Text('Siap Diantar'),
+                onTap: () {
+                  Navigator.of(context).pop('Siap Diantar');
                 },
               ),
               ListTile(
@@ -288,22 +343,34 @@ class OwnerOrderCard extends StatelessWidget {
                           fontWeight: FontWeight.bold)),
                   Row(
                     children: [
-                      ElevatedButton(
+                      ElevatedButton.icon(
                         onPressed: onStatusChange,
+                        icon: const Icon(Icons.edit, size: 18),
+                        label: const Text('Ubah Status'),
                         style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.blue,
-                            shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(10))),
-                        child: const Text('Ubah Status'),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 12, vertical: 10),
+                          backgroundColor: Colors.blueAccent,
+                          foregroundColor: Colors.white,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
                       ),
                       const SizedBox(width: 8),
-                      ElevatedButton(
+                      ElevatedButton.icon(
                         onPressed: onDelete,
+                        icon: const Icon(Icons.delete, size: 18),
+                        label: const Text('Hapus'),
                         style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.red,
-                            shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(10))),
-                        child: const Text('Hapus'),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 12, vertical: 10),
+                          backgroundColor: Colors.redAccent,
+                          foregroundColor: Colors.white,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
                       ),
                     ],
                   ),
@@ -320,6 +387,8 @@ class OwnerOrderCard extends StatelessWidget {
     switch (status) {
       case 'Diproses':
         return Colors.orange;
+      case 'Siap Diantar':
+        return Colors.purple;
       case 'Selesai':
         return Colors.green;
       case 'Dibatalkan':
@@ -349,11 +418,17 @@ class FilterButton extends StatelessWidget {
       style: ElevatedButton.styleFrom(
         backgroundColor: isActive ? Colors.blue : Colors.grey[300],
         foregroundColor: isActive ? Colors.white : Colors.black,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(20),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        elevation: 4, // Tambahkan shadow
       ),
-      child: Text(label),
+      child: Row(
+        children: [
+          Icon(isActive ? Icons.check_circle : Icons.circle_outlined,
+              size: 16, color: isActive ? Colors.white : Colors.grey),
+          const SizedBox(width: 5),
+          Text(label),
+        ],
+      ),
     );
   }
 }

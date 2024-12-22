@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
-class OrderDetailView extends StatelessWidget {
+class OrderDetailView extends StatefulWidget {
   final String orderId;
   final String customerName;
   final String address;
@@ -19,6 +20,36 @@ class OrderDetailView extends StatelessWidget {
   });
 
   @override
+  State<OrderDetailView> createState() => _OrderDetailViewState();
+}
+
+class _OrderDetailViewState extends State<OrderDetailView> {
+  double? _price;
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchPrice(); // Ambil harga dari Firestore saat tampilan diinisialisasi
+  }
+
+  Future<void> _fetchPrice() async {
+    try {
+      final doc = await FirebaseFirestore.instance
+          .collection('orders')
+          .doc(widget.orderId)
+          .get();
+
+      if (doc.exists && doc.data() != null) {
+        setState(() {
+          _price = doc['price']?.toDouble(); // Ambil harga dari database
+        });
+      }
+    } catch (e) {
+      print('Gagal mengambil harga: $e');
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
@@ -34,9 +65,9 @@ class OrderDetailView extends StatelessWidget {
         child: ListView(
           children: [
             Hero(
-              tag: 'orderId-$orderId',
+              tag: 'orderId-${widget.orderId}',
               child: Text(
-                '#$orderId',
+                '#${widget.orderId}',
                 style: const TextStyle(
                   fontWeight: FontWeight.bold,
                   fontSize: 20,
@@ -54,74 +85,51 @@ class OrderDetailView extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Nama Pelanggan: ${customerName.isNotEmpty ? customerName : 'Tidak tersedia'}',
+                      'Nama Pelanggan: ${widget.customerName}',
                       style: const TextStyle(fontSize: 16),
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      'Alamat: ${address.isNotEmpty ? address : 'Tidak tersedia'}',
+                      'Alamat: ${widget.address}',
                       style: const TextStyle(fontSize: 16),
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      'Tanggal: ${date.isNotEmpty ? date : 'Tidak tersedia'}',
+                      'Tanggal: ${widget.date}',
                       style: const TextStyle(fontSize: 16),
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      'Waktu: ${time.isNotEmpty ? time : 'Tidak tersedia'}',
+                      'Waktu: ${widget.time}',
                       style: const TextStyle(fontSize: 16),
                     ),
+                    const SizedBox(height: 8),
+                    if (_price != null)
+                      Text(
+                        'Harga: Rp${_price!.toStringAsFixed(0)}',
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.green,
+                        ),
+                      )
+                    else
+                      const Text(
+                        'Harga: Belum diinput',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.red,
+                        ),
+                      ),
                   ],
                 ),
               ),
             ),
-            const SizedBox(height: 16),
-            Row(
-              children: [
-                const Text(
-                  'Status: ',
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                ),
-                Chip(
-                  label: Text(
-                    status,
-                    style: const TextStyle(color: Colors.white),
-                  ),
-                  backgroundColor: _getStatusColor(status),
-                ),
-              ],
-            ),
             const SizedBox(height: 32),
             ElevatedButton(
               onPressed: () {
-                showDialog(
-                  context: context,
-                  builder: (BuildContext context) {
-                    return AlertDialog(
-                      title: const Text('Input Harga'),
-                      content: const TextField(
-                        keyboardType: TextInputType.number,
-                        decoration: InputDecoration(
-                          hintText: 'Masukkan harga',
-                        ),
-                      ),
-                      actions: [
-                        TextButton(
-                          onPressed: () => Navigator.of(context).pop(),
-                          child: const Text('Batal'),
-                        ),
-                        ElevatedButton(
-                          onPressed: () {
-                            // Tambahkan logika untuk menyimpan harga
-                            Navigator.of(context).pop();
-                          },
-                          child: const Text('Simpan'),
-                        ),
-                      ],
-                    );
-                  },
-                );
+                _showPriceInputDialog(context);
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.blue,
@@ -137,16 +145,55 @@ class OrderDetailView extends StatelessWidget {
     );
   }
 
-  Color _getStatusColor(String status) {
-    switch (status) {
-      case 'Diproses':
-        return Colors.orange;
-      case 'Selesai':
-        return Colors.green;
-      case 'Dibatalkan':
-        return Colors.red;
-      default:
-        return Colors.blue;
-    }
+  void _showPriceInputDialog(BuildContext context) {
+    final TextEditingController priceController = TextEditingController();
+
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Input Harga'),
+          content: TextField(
+            controller: priceController,
+            keyboardType: TextInputType.number,
+            decoration: const InputDecoration(
+              hintText: 'Masukkan harga',
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('Batal'),
+            ),
+            ElevatedButton(
+              onPressed: () async {
+                final input = priceController.text;
+                final price = double.tryParse(input);
+
+                if (price == null) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Harap masukkan angka yang valid')),
+                  );
+                } else {
+                  setState(() {
+                    _price = price;
+                  });
+
+                  // Simpan harga ke Firestore
+                  await FirebaseFirestore.instance
+                      .collection('orders')
+                      .doc(widget.orderId)
+                      .update({'price': price});
+
+                  print('Harga berhasil disimpan: $_price');
+                  Navigator.of(context).pop();
+                }
+              },
+              child: const Text('Simpan'),
+            ),
+          ],
+        );
+      },
+    );
   }
 }

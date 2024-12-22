@@ -16,42 +16,73 @@ class OwnerHomePage extends StatefulWidget {
 
 class _OwnerHomePageState extends State<OwnerHomePage> {
   int _currentIndex = 0;
-  Map<String, int> orderStatusCount = {
+  double totalIncome = 0.0;
+  Map<int, double> monthlyIncome = {};
+  final Map<String, int> orderStatusCount = {
     'Siap Diambil': 0,
     'Diproses': 0,
     'Siap Diantar': 0,
     'Selesai': 0,
-    'Cancelled': 0,
+    'Dibatalkan': 0,
   };
 
   @override
   void initState() {
     super.initState();
+    _fetchFinancialData();
     _fetchOrderStatusData();
   }
 
-  // Mengambil data pesanan dari Firestore dan menghitung jumlah per status
-  _fetchOrderStatusData() async {
+  Future<void> _fetchFinancialData() async {
     var snapshot = await FirebaseFirestore.instance.collection('orders').get();
 
-    var orderStatus = {
-      'Siap Diambil': 0,
-      'Diproses': 0,
-      'Siap Diantar': 0,
-      'Selesai': 0,
-      'Cancelled': 0,
-    };
+    double income = 0.0;
+    Map<int, double> monthlyData = {for (var i = 1; i <= 12; i++) i: 0.0};
 
     for (var doc in snapshot.docs) {
-      String status = doc['status'];
-      if (orderStatus.containsKey(status)) {
-        orderStatus[status] = orderStatus[status]! + 1;
+      final totalPrice = doc['price']?.toDouble() ?? 0.0;
+      final date =
+          doc['pickup_date'] as String? ?? ''; // Asumsikan format "YYYY-MM-DD"
+      final month = date.isNotEmpty
+          ? int.parse(date.split('-')[1])
+          : 0; // Mendapatkan bulan
+
+      if (month > 0) {
+        if (monthlyData.containsKey(month)) {
+          monthlyData[month] = monthlyData[month]! + totalPrice;
+        } else {
+          monthlyData[month] = totalPrice;
+        }
       }
+
+      income += totalPrice;
     }
 
     setState(() {
-      orderStatusCount = orderStatus;
+      totalIncome = income;
+      monthlyIncome = monthlyData;
     });
+  }
+
+  Future<void> _fetchOrderStatusData() async {
+    try {
+      final snapshot =
+          await FirebaseFirestore.instance.collection('orders').get();
+      final statusCounts = Map<String, int>.from(orderStatusCount);
+
+      snapshot.docs.forEach((doc) {
+        final status = doc['status'] as String?;
+        if (status != null && statusCounts.containsKey(status)) {
+          statusCounts[status] = statusCounts[status]! + 1;
+        }
+      });
+
+      setState(() {
+        orderStatusCount.addAll(statusCounts);
+      });
+    } catch (e) {
+      debugPrint('Error fetching order status: $e');
+    }
   }
 
   @override
@@ -70,11 +101,9 @@ class _OwnerHomePageState extends State<OwnerHomePage> {
           ],
         ),
         actions: [
-          // Menambahkan tombol lonceng notifikasi di kanan atas
           IconButton(
             icon: const Icon(Icons.notifications),
             onPressed: () {
-              // Aksi untuk menampilkan notifikasi, bisa diarahkan ke halaman notifikasi
               Navigator.push(
                 context,
                 MaterialPageRoute(
@@ -84,60 +113,54 @@ class _OwnerHomePageState extends State<OwnerHomePage> {
           ),
         ],
       ),
-      body: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Expanded(
-                  child: _buildSummaryCard('Pemasukan', 'Rp 0', Colors.green),
+      body: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.only(bottom: 80.0), // Menghindari overflow
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Expanded(
+                      child: _buildSummaryCard('Pemasukan',
+                          'Rp ${totalIncome.toStringAsFixed(0)}', Colors.green),
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child:
+                          _buildSummaryCard('Pengeluaran', 'Rp 0', Colors.red),
+                    ),
+                  ],
                 ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: _buildSummaryCard('Pengeluaran', 'Rp 0', Colors.red),
+              ),
+              Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      "Grafik Keuangan",
+                      style:
+                          TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                    ),
+                    const SizedBox(height: 10),
+                    _buildFinanceChart(),
+                  ],
                 ),
-              ],
-            ),
+              ),
+              Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: _buildOrderStatusCard(),
+              ),
+            ],
           ),
-          Padding(
-            padding:
-                const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
-            child: StreamBuilder(
-              stream: FirebaseFirestore.instance
-                  .collection('dashboardData')
-                  .snapshots(),
-              builder: (context, snapshot) {
-                if (!snapshot.hasData || snapshot.data?.docs == null) {
-                  return const Center(child: CircularProgressIndicator());
-                }
-
-                var data =
-                    snapshot.data!.docs.isEmpty ? null : snapshot.data!.docs[0];
-
-                return SingleChildScrollView(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      data == null || data['financeStats'].isEmpty
-                          ? _buildEmptyFinanceChart()
-                          : _buildFinanceChart(data['financeStats'] ?? {}),
-                      const SizedBox(height: 20),
-                      _buildOrderStatusCard(),
-                    ],
-                  ),
-                );
-              },
-            ),
-          ),
-        ],
+        ),
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          // Navigasi ke halaman OwnerOrder
           Navigator.push(
             context,
             MaterialPageRoute(builder: (context) => const AddOrderPage()),
@@ -173,22 +196,17 @@ class _OwnerHomePageState extends State<OwnerHomePage> {
             _currentIndex = index;
           });
 
-          if (index == 1) {
-            // Pastikan navigasi ke halaman pesanan
+          final pages = [
+            null,
+            const OwnerOrderView(),
+            OwnerKeuanganPage(),
+            ProfilePage(),
+          ];
+
+          if (pages[index] != null) {
             Navigator.push(
               context,
-              MaterialPageRoute(builder: (context) => const OwnerOrderView()),
-            );
-          } else if (index == 3) {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => ProfilePage()),
-            );
-          }
-          if (index == 2) {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => OwnerKeuanganPage()),
+              MaterialPageRoute(builder: (context) => pages[index]!),
             );
           }
         },
@@ -219,120 +237,70 @@ class _OwnerHomePageState extends State<OwnerHomePage> {
     );
   }
 
-  Widget _buildEmptyFinanceChart() {
-    return Container(
-      padding: const EdgeInsets.all(16.0),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(10),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.grey.withOpacity(0.2),
-            blurRadius: 4,
-            spreadRadius: 2,
-          ),
-        ],
-      ),
-      child: const Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'Statistik Keuangan',
-            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-          ),
-          SizedBox(height: 10),
-          Center(
-            child: Text(
-              'Data tidak tersedia',
-              style: TextStyle(color: Colors.grey, fontSize: 16),
-              textAlign: TextAlign.center,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildFinanceChart(Map<String, dynamic> stats) {
+  Widget _buildFinanceChart() {
     return SizedBox(
-      height: 250,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Padding(
-            padding: EdgeInsets.only(bottom: 10.0),
-            child: Text(
-              'Statistik Keuangan',
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-            ),
-          ),
-          Expanded(
-            child: BarChart(
-              BarChartData(
-                barGroups: stats.entries.map((entry) {
-                  return BarChartGroupData(
-                    x: int.parse(entry.key),
-                    barRods: [
-                      BarChartRodData(
-                          toY: entry.value['income'].toDouble(),
-                          color: Colors.blue),
-                      BarChartRodData(
-                          toY: entry.value['expense'].toDouble(),
-                          color: Colors.red),
-                    ],
-                  );
-                }).toList(),
-                titlesData: FlTitlesData(
-                  leftTitles: const AxisTitles(
-                    sideTitles: SideTitles(showTitles: true),
-                  ),
-                  bottomTitles: AxisTitles(
-                    sideTitles: SideTitles(
-                      showTitles: true,
-                      getTitlesWidget: (value, meta) {
-                        switch (value.toInt()) {
-                          case 0:
-                            return const Text('Sen');
-                          case 1:
-                            return const Text('Sel');
-                          case 2:
-                            return const Text('Rab');
-                          case 3:
-                            return const Text('Kam');
-                          case 4:
-                            return const Text('Jum');
-                          case 5:
-                            return const Text('Sab');
-                          case 6:
-                            return const Text('Min');
-                        }
-                        return const Text('');
-                      },
-                    ),
-                  ),
+      height: 200,
+      child: BarChart(
+        BarChartData(
+          barGroups: monthlyIncome.entries.map((entry) {
+            return BarChartGroupData(
+              x: entry.key,
+              barRods: [
+                BarChartRodData(
+                  toY: entry.value,
+                  color: Colors.green,
+                  width: 16,
                 ),
+              ],
+            );
+          }).toList(),
+          titlesData: FlTitlesData(
+            leftTitles: AxisTitles(
+              sideTitles: SideTitles(showTitles: true),
+            ),
+            bottomTitles: AxisTitles(
+              sideTitles: SideTitles(
+                showTitles: true,
+                getTitlesWidget: (value, meta) {
+                  switch (value.toInt()) {
+                    case 1:
+                      return const Text('Jan');
+                    case 2:
+                      return const Text('Feb');
+                    case 3:
+                      return const Text('Mar');
+                    case 4:
+                      return const Text('Apr');
+                    case 5:
+                      return const Text('May');
+                    case 6:
+                      return const Text('Jun');
+                    case 7:
+                      return const Text('Jul');
+                    case 8:
+                      return const Text('Aug');
+                    case 9:
+                      return const Text('Sep');
+                    case 10:
+                      return const Text('Oct');
+                    case 11:
+                      return const Text('Nov');
+                    case 12:
+                      return const Text('Dec');
+                    default:
+                      return const Text('');
+                  }
+                },
               ),
             ),
           ),
-        ],
+        ),
       ),
     );
   }
 
   Widget _buildOrderStatusCard() {
-    return Container(
-      padding: const EdgeInsets.all(16.0),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(10),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.grey.withOpacity(0.2),
-            blurRadius: 4,
-            spreadRadius: 2,
-          ),
-        ],
-      ),
+    return SingleChildScrollView(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -341,30 +309,42 @@ class _OwnerHomePageState extends State<OwnerHomePage> {
             style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
           ),
           const SizedBox(height: 10),
-          _buildStatusRow(
-              'Siap Diambil', orderStatusCount['Siap Diambil'].toString()),
-          _buildStatusRow('Diproses', orderStatusCount['Diproses'].toString()),
-          _buildStatusRow(
-              'Siap Diantar', orderStatusCount['Siap Diantar'].toString()),
-          _buildStatusRow('Selesai', orderStatusCount['Selesai'].toString()),
-          _buildStatusRow(
-              'Cancelled', orderStatusCount['Cancelled'].toString()),
-          const SizedBox(height: 20),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildStatusRow(String title, String count) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4.0),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(title, style: const TextStyle(fontSize: 14)),
-          Text(count,
-              style:
-                  const TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
+          ListView.builder(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            itemCount: orderStatusCount.entries.length,
+            itemBuilder: (context, index) {
+              final entry = orderStatusCount.entries.elementAt(index);
+              return Card(
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                elevation: 2,
+                margin: const EdgeInsets.symmetric(vertical: 6),
+                child: Padding(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          entry.key,
+                          style: const TextStyle(fontSize: 14),
+                        ),
+                      ),
+                      Text(
+                        entry.value.toString(),
+                        style: const TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            },
+          ),
         ],
       ),
     );
