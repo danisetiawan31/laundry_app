@@ -105,6 +105,11 @@ class _ProfilePageState extends State<ProfilePage> {
     }
   }
 
+  Future<void> logout() async {
+    await _auth.signOut();
+    Navigator.of(context).pushReplacementNamed('/login');
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -113,6 +118,10 @@ class _ProfilePageState extends State<ProfilePage> {
         backgroundColor: Colors.white,
         elevation: 0,
         actions: [
+          IconButton(
+            icon: const Icon(Icons.logout, color: Colors.red),
+            onPressed: logout,
+          ),
           IconButton(
             icon: const Icon(Icons.edit, color: Colors.blue),
             onPressed: () => _showEditDialog(),

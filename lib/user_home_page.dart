@@ -2,10 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:laundry_app/price_list_order.dart';
-
-// Import halaman lainnya
 import 'payment_page.dart';
-import 'chat_page.dart';
 import 'user_history.dart';
 import 'profil.dart'; // Import halaman ProfilePage
 
@@ -17,29 +14,39 @@ class UserHomePage extends StatefulWidget {
 }
 
 class _UserHomePageState extends State<UserHomePage> {
-  String? selectedName;
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  User? currentUser;
+  Map<String, dynamic>? userData;
   int _selectedIndex = 0;
 
   @override
   void initState() {
     super.initState();
-    fetchUserName();
+    getCurrentUser();
   }
 
-  Future<void> fetchUserName() async {
+  Future<void> getCurrentUser() async {
     try {
-      User? user = FirebaseAuth.instance.currentUser;
-      if (user != null) {
-        DocumentSnapshot userDoc = await FirebaseFirestore.instance
-            .collection('users')
-            .doc(user.uid)
-            .get();
-        setState(() {
-          selectedName = userDoc['name'];
-        });
+      currentUser = _auth.currentUser;
+      if (currentUser != null) {
+        DocumentSnapshot userDoc =
+            await _firestore.collection('users').doc(currentUser!.uid).get();
+
+        if (userDoc.exists) {
+          setState(() {
+            userData = userDoc.data() as Map<String, dynamic>?;
+          });
+        } else {
+          setState(() {
+            userData = {};
+          });
+        }
       }
     } catch (e) {
-      print("Error fetching user name: $e");
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Error fetching user data: $e")),
+      );
     }
   }
 
@@ -58,20 +65,9 @@ class _UserHomePageState extends State<UserHomePage> {
     } else if (index == 1) {
       Navigator.push(
         context,
-        MaterialPageRoute(builder: (context) => const PaymentPage()),
-      );
-    } else if (index == 2) {
-      Navigator.push(
-        context,
-        MaterialPageRoute(builder: (context) => const ChatPage()),
-      );
-    } else if (index == 3) {
-      Navigator.push(
-        context,
         MaterialPageRoute(builder: (context) => const OrderHistoryPage()),
       );
-    } else if (index == 4) {
-      // Navigasi ke ProfilePage
+    } else if (index == 2) {
       Navigator.push(
         context,
         MaterialPageRoute(builder: (context) => const ProfilePage()),
@@ -87,7 +83,7 @@ class _UserHomePageState extends State<UserHomePage> {
           Container(
             decoration: BoxDecoration(
               image: DecorationImage(
-                image: const AssetImage('bg1.png'),
+                image: const NetworkImage('https://i.ibb.co.com/BcJsL66/bg1.png'),
                 fit: BoxFit.cover,
                 colorFilter: ColorFilter.mode(
                   Colors.white.withOpacity(0.9),
@@ -104,20 +100,22 @@ class _UserHomePageState extends State<UserHomePage> {
                 children: [
                   Row(
                     children: [
-                      const CircleAvatar(
+                      CircleAvatar(
                         radius: 30,
-                        backgroundImage: AssetImage('assets/profile_image.png'),
+                        backgroundImage: userData?['profileImage'] != null
+                            ? NetworkImage(userData!['profileImage'])
+                            : const AssetImage('assets/profile_image.png'),
                       ),
                       const SizedBox(width: 16),
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'Hai, ${selectedName ?? 'User'}',
+                            'Hai, ${userData?['name'] ?? 'User'}',
                             style: const TextStyle(
                                 fontSize: 18, fontWeight: FontWeight.bold),
                           ),
-                          const Text('Jl. Depati Parbo, Telanaipura'),
+                          Text(userData?['address'] ?? 'Alamat tidak tersedia'),
                         ],
                       ),
                       const Spacer(),
@@ -135,7 +133,8 @@ class _UserHomePageState extends State<UserHomePage> {
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(10),
                       image: const DecorationImage(
-                        image: AssetImage('img1.jpg'),
+                        image: NetworkImage(
+                            'https://i.ibb.co.com/LCGqmt6/gambar1.png'),
                         fit: BoxFit.cover,
                       ),
                     ),
@@ -149,18 +148,17 @@ class _UserHomePageState extends State<UserHomePage> {
                   GridView(
                     shrinkWrap: true,
                     physics: const NeverScrollableScrollPhysics(),
-                    gridDelegate:
-                        const SliverGridDelegateWithFixedCrossAxisCount(
+                    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                       crossAxisCount: 2,
                       childAspectRatio: 1.5,
                       crossAxisSpacing: 10,
                       mainAxisSpacing: 10,
                     ),
                     children: [
-                      serviceCard('Cuci Aja', 'img2.jpg'),
-                      serviceCard('Cuci Setrika', 'iron.png'),
-                      serviceCard('Cuci Bed Cover', 'bed.png'),
-                      serviceCard('Cuci Gorden', 'carpet.png'),
+                      serviceCard('Cuci Kering',
+                          'https://i.ibb.co.com/86LKZLb/img2.jpg'),
+                      serviceCard('Cuci Setrika',
+                          'https://i.ibb.co.com/F0PZFHd/Iron.png'),
                     ],
                   ),
                 ],
@@ -181,14 +179,6 @@ class _UserHomePageState extends State<UserHomePage> {
             label: 'Home',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.shopping_bag),
-            label: 'Order',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.chat_bubble_outline),
-            label: 'Chat',
-          ),
-          BottomNavigationBarItem(
             icon: Icon(Icons.history),
             label: 'History',
           ),
@@ -201,10 +191,10 @@ class _UserHomePageState extends State<UserHomePage> {
     );
   }
 
-  Widget serviceCard(String title, String iconPath) {
+  Widget serviceCard(String title, String imageUrl) {
     return GestureDetector(
       onTap: () {
-        if (title == "Cuci Aja") {
+        if (title == "Cuci Kering" || title == "Cuci Setrika") {
           Navigator.push(
             context,
             MaterialPageRoute(
@@ -230,8 +220,8 @@ class _UserHomePageState extends State<UserHomePage> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Image.asset(
-              iconPath,
+            Image.network(
+              imageUrl,
               height: 50,
             ),
             const SizedBox(height: 8),

@@ -74,8 +74,8 @@ class _LoginScreenState extends State<LoginScreen> {
           Container(
             decoration: BoxDecoration(
               image: DecorationImage(
-                image: const AssetImage(
-                    'bg1.png'), // Ganti dengan path background Anda
+                image: NetworkImage(
+                    'https://i.ibb.co.com/BcJsL66/bg1.png'), // Ganti dengan URL gambar background Anda
                 fit: BoxFit.cover,
                 colorFilter: ColorFilter.mode(
                   Colors.white.withOpacity(0.9),
@@ -90,8 +90,8 @@ class _LoginScreenState extends State<LoginScreen> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Image.asset(
-                    'logo1.png', // Ganti dengan path logo Anda
+                  Image.network(
+                    'https://i.ibb.co.com/kS6jXhP/logo1.png', // Ganti dengan URL gambar logo Anda
                     height: 150,
                   ),
                   const SizedBox(height: 32),

@@ -1,6 +1,20 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class ProfilePage extends StatelessWidget {
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+
+  Future<void> _logout(BuildContext context) async {
+    try {
+      await _auth.signOut();
+      Navigator.of(context).pushReplacementNamed(
+          '/login'); // Redirect to login page after logout
+    } catch (e) {
+      print('Failed to log out: $e');
+      // You can show an error message to the user if necessary
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -8,6 +22,7 @@ class ProfilePage extends StatelessWidget {
         title: Text('Profil'),
         backgroundColor: Colors.blue,
         elevation: 0,
+        automaticallyImplyLeading: false, // Remove the back button
       ),
       body: Column(
         children: [
@@ -76,9 +91,7 @@ class ProfilePage extends StatelessWidget {
                     style: TextStyle(color: Colors.red),
                   ),
                   trailing: Icon(Icons.arrow_forward_ios, size: 16),
-                  onTap: () {
-                    // TODO: Implement logout functionality
-                  },
+                  onTap: () => _logout(context),
                 ),
               ],
             ),

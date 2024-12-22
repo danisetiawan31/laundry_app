@@ -12,9 +12,13 @@ class _AddOrderPageState extends State<AddOrderPage> {
   final _nameController = TextEditingController();
   final _phoneController = TextEditingController();
   final _addressController = TextEditingController();
-  final _weightController = TextEditingController();
+  final _pickupDateController = TextEditingController();
+  final _deliveryDateController = TextEditingController();
+  final _pickupTimeController = TextEditingController();
+  final _priceController = TextEditingController();
 
   String _service = 'Laundry';
+  String _status = 'Proses'; // Set status to "Proses" by default
   String _paymentStatus = 'Cash';
 
   @override
@@ -104,6 +108,87 @@ class _AddOrderPageState extends State<AddOrderPage> {
                     ),
                     const SizedBox(height: 16),
 
+                    // Tanggal Jemput
+                    const Text('Tanggal Jemput',
+                        style: TextStyle(fontSize: 16, color: Colors.black)),
+                    TextFormField(
+                      controller: _pickupDateController,
+                      decoration: const InputDecoration(
+                        hintText: 'Masukkan tanggal jemput',
+                        border: OutlineInputBorder(),
+                        filled: true,
+                        fillColor: Colors.white,
+                      ),
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Tanggal jemput harus diisi';
+                        }
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: 16),
+
+                    // Tanggal Antar
+                    const Text('Tanggal Antar',
+                        style: TextStyle(fontSize: 16, color: Colors.black)),
+                    TextFormField(
+                      controller: _deliveryDateController,
+                      decoration: const InputDecoration(
+                        hintText: 'Masukkan tanggal antar',
+                        border: OutlineInputBorder(),
+                        filled: true,
+                        fillColor: Colors.white,
+                      ),
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Tanggal antar harus diisi';
+                        }
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: 16),
+
+                    // Waktu Jemput
+                    const Text('Waktu Jemput',
+                        style: TextStyle(fontSize: 16, color: Colors.black)),
+                    TextFormField(
+                      controller: _pickupTimeController,
+                      decoration: const InputDecoration(
+                        hintText: 'Masukkan waktu jemput',
+                        border: OutlineInputBorder(),
+                        filled: true,
+                        fillColor: Colors.white,
+                      ),
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Waktu jemput harus diisi';
+                        }
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: 16),
+
+                    // Harga
+                    const Text('Harga',
+                        style: TextStyle(fontSize: 16, color: Colors.black)),
+                    TextFormField(
+                      controller: _priceController,
+                      keyboardType: TextInputType.number,
+                      decoration: const InputDecoration(
+                        hintText: 'Masukkan harga',
+                        border: OutlineInputBorder(),
+                        filled: true,
+                        fillColor: Colors.white,
+                      ),
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Harga harus diisi';
+                        }
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: 16),
+
                     // Layanan
                     const Text('Layanan',
                         style: TextStyle(fontSize: 16, color: Colors.black)),
@@ -126,27 +211,6 @@ class _AddOrderPageState extends State<AddOrderPage> {
                         filled: true,
                         fillColor: Colors.white,
                       ),
-                    ),
-                    const SizedBox(height: 16),
-
-                    // Berat Pakaian (kg)
-                    const Text('Berat Pakaian (kg)',
-                        style: TextStyle(fontSize: 16, color: Colors.black)),
-                    TextFormField(
-                      controller: _weightController,
-                      keyboardType: TextInputType.number,
-                      decoration: const InputDecoration(
-                        hintText: 'Masukkan berat pakaian',
-                        border: OutlineInputBorder(),
-                        filled: true,
-                        fillColor: Colors.white,
-                      ),
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Berat pakaian harus diisi';
-                        }
-                        return null;
-                      },
                     ),
                     const SizedBox(height: 16),
 

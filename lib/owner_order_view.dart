@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:laundry_app/owner_order_detail.dart';
-import 'owner_acc_order.dart';
 
 class OwnerOrderView extends StatefulWidget {
   const OwnerOrderView({super.key});
@@ -20,6 +19,7 @@ class _OwnerOrderViewState extends State<OwnerOrderView> {
     return Scaffold(
       backgroundColor: Colors.grey[200],
       appBar: AppBar(
+        automaticallyImplyLeading: false, // Remove the back button
         backgroundColor: Colors.transparent,
         elevation: 0,
         flexibleSpace: Container(
@@ -32,7 +32,7 @@ class _OwnerOrderViewState extends State<OwnerOrderView> {
           ),
         ),
         title: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
+          mainAxisAlignment: MainAxisAlignment.center, // Menggeser ke kiri
           children: [
             const Icon(Icons.local_laundry_service,
                 color: Colors.white, size: 28),
@@ -48,18 +48,6 @@ class _OwnerOrderViewState extends State<OwnerOrderView> {
             ),
           ],
         ),
-        centerTitle: true,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.notifications, color: Colors.white),
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => const Accorder()),
-              );
-            },
-          ),
-        ],
       ),
       body: Column(
         children: [
@@ -321,58 +309,67 @@ class OwnerOrderCard extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('#$orderId',
-                  style: const TextStyle(
-                      fontWeight: FontWeight.bold, color: Colors.grey)),
+              Row(
+                // Memasukkan Order ID dan status ke dalam Row yang sama
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    '#$orderId',
+                    style: const TextStyle(
+                        fontWeight: FontWeight.bold, color: Colors.grey),
+                  ),
+                  Text(
+                    status,
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: status == 'Diproses'
+                          ? Colors.orange
+                          : status == 'Selesai'
+                              ? Colors.green
+                              : status == 'Siap Diantar'
+                                  ? Colors.blue
+                                  : Colors.red,
+                    ),
+                  ),
+                ],
+              ),
               const SizedBox(height: 8),
-              Text(customerName,
-                  style: const TextStyle(
-                      fontWeight: FontWeight.bold, fontSize: 16)),
+              Text(
+                customerName,
+                style: const TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(address),
+              const SizedBox(height: 8),
+              Text('Tanggal Jemput: $date'),
               const SizedBox(height: 4),
-              Text(address, style: const TextStyle(fontSize: 14)),
-              const SizedBox(height: 4),
-              Text('$date, $time',
-                  style: const TextStyle(color: Colors.black54)),
+              Text('Waktu Jemput: $time'),
               const SizedBox(height: 12),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text(status,
-                      style: TextStyle(
-                          color: _getStatusColor(status),
-                          fontWeight: FontWeight.bold)),
-                  Row(
-                    children: [
-                      ElevatedButton.icon(
-                        onPressed: onStatusChange,
-                        icon: const Icon(Icons.edit, size: 18),
-                        label: const Text('Ubah Status'),
-                        style: ElevatedButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 12, vertical: 10),
-                          backgroundColor: Colors.blueAccent,
-                          foregroundColor: Colors.white,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      ElevatedButton.icon(
-                        onPressed: onDelete,
-                        icon: const Icon(Icons.delete, size: 18),
-                        label: const Text('Hapus'),
-                        style: ElevatedButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 12, vertical: 10),
-                          backgroundColor: Colors.redAccent,
-                          foregroundColor: Colors.white,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                        ),
-                      ),
-                    ],
+                  ElevatedButton(
+                    onPressed: onStatusChange,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.blue,
+                    ),
+                    child: const Text(
+                      'Ubah Status',
+                      style: TextStyle(color: Colors.white),
+                    ),
+                  ),
+                  ElevatedButton(
+                    onPressed: onDelete,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.red,
+                    ),
+                    child: const Text(
+                      'Hapus',
+                      style: TextStyle(color: Colors.white),
+                    ),
                   ),
                 ],
               ),
@@ -381,21 +378,6 @@ class OwnerOrderCard extends StatelessWidget {
         ),
       ),
     );
-  }
-
-  Color _getStatusColor(String status) {
-    switch (status) {
-      case 'Diproses':
-        return Colors.orange;
-      case 'Siap Diantar':
-        return Colors.purple;
-      case 'Selesai':
-        return Colors.green;
-      case 'Dibatalkan':
-        return Colors.red;
-      default:
-        return Colors.blue;
-    }
   }
 }
 
@@ -416,18 +398,11 @@ class FilterButton extends StatelessWidget {
     return ElevatedButton(
       onPressed: onPressed,
       style: ElevatedButton.styleFrom(
-        backgroundColor: isActive ? Colors.blue : Colors.grey[300],
-        foregroundColor: isActive ? Colors.white : Colors.black,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        elevation: 4, // Tambahkan shadow
+        backgroundColor: isActive ? Colors.blue : Colors.grey,
       ),
-      child: Row(
-        children: [
-          Icon(isActive ? Icons.check_circle : Icons.circle_outlined,
-              size: 16, color: isActive ? Colors.white : Colors.grey),
-          const SizedBox(width: 5),
-          Text(label),
-        ],
+      child: Text(
+        label,
+        style: const TextStyle(color: Colors.white), // Ubah warna teks di sini
       ),
     );
   }

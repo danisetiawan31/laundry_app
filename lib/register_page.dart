@@ -56,8 +56,8 @@ class _RegisterPageState extends State<RegisterPage> {
           Container(
             decoration: BoxDecoration(
               image: DecorationImage(
-                image: const AssetImage(
-                    'bg1.png'), // Ganti dengan path background Anda
+                image: NetworkImage(
+                    'https://i.ibb.co.com/BcJsL66/bg1.png'), // Ganti dengan URL background Anda
                 fit: BoxFit.cover,
                 colorFilter: ColorFilter.mode(
                   Colors.white.withOpacity(
@@ -74,8 +74,8 @@ class _RegisterPageState extends State<RegisterPage> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   // Logo Image
-                  Image.asset(
-                    'logo1.png', // Ganti dengan path logo Anda
+                  Image.network(
+                    'https://i.ibb.co.com/kS6jXhP/logo1.png', // Ganti dengan URL logo Anda
                     height: 150,
                   ),
                   const SizedBox(height: 32),

@@ -38,6 +38,7 @@ class OwnerKeuanganPage extends StatelessWidget {
             ),
           ),
         ),
+        automaticallyImplyLeading: false, // Remove the back button
         actions: [
           Stack(
             children: [
@@ -84,7 +85,8 @@ class OwnerKeuanganPage extends StatelessWidget {
           // Hitung total pemasukan berdasarkan price
           double totalIncome = 0;
           for (var doc in docs) {
-            final totalPrice = doc['price'] as double? ?? 0.0;
+            final totalPrice =
+                (doc['price'] as num).toDouble(); // Konversi ke double
             totalIncome += totalPrice;
           }
 
@@ -131,7 +133,8 @@ class OwnerKeuanganPage extends StatelessWidget {
                       final title = order['customer_name'] ?? 'Pesanan';
                       final date =
                           order['pickup_date'] ?? 'Tanggal tidak diketahui';
-                      final totalPrice = order['price'] as double? ?? 0.0;
+                      final totalPrice =
+                          (order['price'] as num).toDouble(); // Konversi aman
 
                       return _buildTransactionItem(
                         title,
@@ -191,7 +194,8 @@ class OwnerKeuanganPage extends StatelessWidget {
     Map<String, double> monthlyIncome = {};
 
     for (var doc in docs) {
-      final totalPrice = doc['price'] as double? ?? 0.0;
+      final totalPrice = (doc['price'] as num).toDouble(); // Konversi ke double
+
       final date = doc['pickup_date'] ?? '';
       final month = date.split('-')[1]; // Asumsikan format "YYYY-MM-DD"
 
