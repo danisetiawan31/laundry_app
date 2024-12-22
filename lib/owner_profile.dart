@@ -7,11 +7,9 @@ class ProfilePage extends StatelessWidget {
   Future<void> _logout(BuildContext context) async {
     try {
       await _auth.signOut();
-      Navigator.of(context).pushReplacementNamed(
-          '/login'); // Redirect to login page after logout
+      Navigator.of(context).pushReplacementNamed('/login');
     } catch (e) {
       print('Failed to log out: $e');
-      // You can show an error message to the user if necessary
     }
   }
 
@@ -19,45 +17,71 @@ class ProfilePage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Profil'),
         backgroundColor: Colors.blue,
         elevation: 0,
-        automaticallyImplyLeading: false, // Remove the back button
+        automaticallyImplyLeading: false,
+        title: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.person,
+              color: Colors.white,
+            ),
+            SizedBox(width: 8),
+            Text(
+              'PROFILE',
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
+              ),
+            ),
+          ],
+        ),
       ),
       body: Column(
         children: [
-          // Header Profile
-          Container(
-            color: Colors.blue,
-            padding: EdgeInsets.all(16.0),
-            child: Column(
-              children: [
-                CircleAvatar(
-                  radius: 40,
-                  backgroundColor: Colors.grey[300],
-                  child: Icon(
-                    Icons.person,
-                    size: 40,
-                    color: Colors.grey[700],
-                  ),
+          // Header Profile in Card
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Card(
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+              elevation: 4,
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    CircleAvatar(
+                      radius: 40,
+                      backgroundColor: Colors.grey[300],
+                      child: Icon(
+                        Icons.person,
+                        size: 40,
+                        color: Colors.grey[700],
+                      ),
+                    ),
+                    SizedBox(height: 12),
+                    Text(
+                      'Shabrina Laundry',
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.blue[800],
+                      ),
+                    ),
+                    SizedBox(height: 4),
+                    Text(
+                      'owner@shabrinalaundry.com',
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: Colors.grey[600],
+                      ),
+                    ),
+                  ],
                 ),
-                SizedBox(height: 8),
-                Text(
-                  'Shabrina Laundry',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                  ),
-                ),
-                Text(
-                  'owner@shabrinalaundry.com',
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: Colors.white,
-                  ),
-                ),
-              ],
+              ),
             ),
           ),
 
@@ -95,32 +119,6 @@ class ProfilePage extends StatelessWidget {
                 ),
               ],
             ),
-          ),
-        ],
-      ),
-
-      // Bottom Navigation Bar
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: 3, // Assuming 'Profil' is the 4th tab
-        onTap: (index) {
-          // TODO: Handle bottom navigation
-        },
-        items: [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.dashboard),
-            label: 'Dashboard',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.list),
-            label: 'Pesanan',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.account_balance_wallet),
-            label: 'Keuangan',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.person),
-            label: 'Profil',
           ),
         ],
       ),
