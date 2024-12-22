@@ -88,130 +88,127 @@ class _OwnerHomePageState extends State<OwnerHomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        automaticallyImplyLeading: false,
-        backgroundColor: Colors.blue,
-        title: const Column(
+      appBar: _currentIndex == 0
+          ? AppBar(
+              automaticallyImplyLeading: false,
+              backgroundColor: Colors.blue,
+              title: Row(
+                children: [
+                  Icon(
+                    Icons.home,
+                    size: 30,
+                    color: Colors.white,
+                  ),
+                  const SizedBox(width: 10),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: const [
+                      Text(
+                        'Dashboard',
+                        style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      Text(
+                        'Selamat datang di Shabrina Laundry',
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w400,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+              actions: [
+                IconButton(
+                  icon: const Icon(Icons.notifications),
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => const NotificationsPage()),
+                    );
+                  },
+                ),
+              ],
+            )
+          : null, // AppBar hanya untuk halaman Dashboard
+      body: _buildBody(),
+      floatingActionButton: _currentIndex == 0
+          ? FloatingActionButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const AddOrderPage()),
+                );
+              },
+              backgroundColor: Colors.blue,
+              child: const Icon(Icons.add, color: Colors.white),
+            )
+          : null, // FAB hanya untuk halaman Dashboard
+      bottomNavigationBar: _buildBottomNavigationBar(),
+      backgroundColor: const Color(0xFFF7F4FB),
+    );
+  }
+
+  Widget _buildBody() {
+    if (_currentIndex == 0) {
+      return _buildDashboardPage(); // Dashboard Page
+    } else if (_currentIndex == 1) {
+      return const OwnerOrderView(); // Orders Page
+    } else if (_currentIndex == 2) {
+      return OwnerKeuanganPage(); // Keuangan Page
+    } else {
+      return ProfilePage(); // Profile Page
+    }
+  }
+
+  Widget _buildDashboardPage() {
+    return SingleChildScrollView(
+      child: Padding(
+        padding: const EdgeInsets.only(bottom: 80.0), // Menghindari overflow
+        child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Selamat Datang,', style: TextStyle(fontSize: 16)),
-            Text('Shabrina Laundry',
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-            SizedBox(height: 8),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16.0),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Expanded(
+                    child: _buildSummaryCard('Pemasukan',
+                        'Rp ${totalIncome.toStringAsFixed(0)}', Colors.green),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: _buildSummaryCard('Pengeluaran', 'Rp 0', Colors.red),
+                  ),
+                ],
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    "Grafik Keuangan",
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 10),
+                  _buildFinanceChart(),
+                ],
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: _buildOrderStatusCard(),
+            ),
           ],
         ),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.notifications),
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                    builder: (context) => const NotificationsPage()),
-              );
-            },
-          ),
-        ],
       ),
-      body: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.only(bottom: 80.0), // Menghindari overflow
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Expanded(
-                      child: _buildSummaryCard('Pemasukan',
-                          'Rp ${totalIncome.toStringAsFixed(0)}', Colors.green),
-                    ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child:
-                          _buildSummaryCard('Pengeluaran', 'Rp 0', Colors.red),
-                    ),
-                  ],
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      "Grafik Keuangan",
-                      style:
-                          TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                    ),
-                    const SizedBox(height: 10),
-                    _buildFinanceChart(),
-                  ],
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: _buildOrderStatusCard(),
-              ),
-            ],
-          ),
-        ),
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => const AddOrderPage()),
-          );
-        },
-        backgroundColor: Colors.blue,
-        child: const Icon(Icons.add, color: Colors.white),
-      ),
-      bottomNavigationBar: BottomNavigationBar(
-        items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.dashboard),
-            label: 'Dashboard',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.list),
-            label: 'Pesanan',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.attach_money),
-            label: 'Keuangan',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.person),
-            label: 'Profil',
-          ),
-        ],
-        currentIndex: _currentIndex,
-        selectedItemColor: Colors.blue,
-        unselectedItemColor: Colors.grey,
-        onTap: (index) {
-          setState(() {
-            _currentIndex = index;
-          });
-
-          final pages = [
-            null,
-            const OwnerOrderView(),
-            OwnerKeuanganPage(),
-            ProfilePage(),
-          ];
-
-          if (pages[index] != null) {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => pages[index]!),
-            );
-          }
-        },
-      ),
-      backgroundColor: const Color(0xFFF7F4FB),
     );
   }
 
@@ -347,6 +344,37 @@ class _OwnerHomePageState extends State<OwnerHomePage> {
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildBottomNavigationBar() {
+    return BottomNavigationBar(
+      items: const [
+        BottomNavigationBarItem(
+          icon: Icon(Icons.dashboard),
+          label: 'Dashboard',
+        ),
+        BottomNavigationBarItem(
+          icon: Icon(Icons.list),
+          label: 'Pesanan',
+        ),
+        BottomNavigationBarItem(
+          icon: Icon(Icons.attach_money),
+          label: 'Keuangan',
+        ),
+        BottomNavigationBarItem(
+          icon: Icon(Icons.person),
+          label: 'Profil',
+        ),
+      ],
+      currentIndex: _currentIndex,
+      selectedItemColor: Colors.blue,
+      unselectedItemColor: Colors.grey,
+      onTap: (index) {
+        setState(() {
+          _currentIndex = index;
+        });
+      },
     );
   }
 }

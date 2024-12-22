@@ -88,35 +88,43 @@ class OwnerKeuanganPage extends StatelessWidget {
             totalIncome += totalPrice;
           }
 
-          return Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text(
-                  "Kelola keuangan laundry Anda",
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                ),
-                const SizedBox(height: 20),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
-                  children: [
-                    _buildStatCard('Total Pemasukan',
-                        'Rp ${totalIncome.toStringAsFixed(0)}', Colors.green),
-                    _buildStatCard('Total Pengeluaran', 'Rp 0',
-                        Colors.red), // Placeholder untuk pengeluaran
-                  ],
-                ),
-                const SizedBox(height: 20),
-                const Text(
-                  "Grafik Keuangan",
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                ),
-                const SizedBox(height: 10),
-                _buildFinanceChart(docs),
-                const SizedBox(height: 20),
-                Expanded(
-                  child: ListView.builder(
+          return SingleChildScrollView(
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    "Kelola keuangan laundry Anda",
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 20),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceAround,
+                    children: [
+                      _buildStatCard('Total Pemasukan',
+                          'Rp ${totalIncome.toStringAsFixed(0)}', Colors.green),
+                      _buildStatCard('Total Pengeluaran', 'Rp 0',
+                          Colors.red), // Placeholder untuk pengeluaran
+                    ],
+                  ),
+                  const SizedBox(height: 20),
+                  const Text(
+                    "Grafik Keuangan",
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 10),
+                  _buildFinanceChart(docs),
+                  const SizedBox(height: 20),
+                  const Text(
+                    "Daftar Transaksi",
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 10),
+                  ListView.builder(
+                    physics: const NeverScrollableScrollPhysics(),
+                    shrinkWrap:
+                        true, // Penting agar tidak error di dalam Column
                     itemCount: docs.length,
                     itemBuilder: (context, index) {
                       final order = docs[index];
@@ -133,8 +141,8 @@ class OwnerKeuanganPage extends StatelessWidget {
                       );
                     },
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           );
         },
