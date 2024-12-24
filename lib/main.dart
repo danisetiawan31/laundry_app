@@ -4,7 +4,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:laundry_app/firebase_options.dart';
 import 'package:laundry_app/login_screen.dart';
-import 'owner_profile.dart'; // Halaman profil owner
+// Halaman profil owner
 import 'user_home_page.dart'; // Halaman home untuk user
 import 'owner_home_page.dart'; // Halaman home untuk owner
 
@@ -27,7 +27,7 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
       ),
-      home: AuthWrapper(),
+      home: const AuthWrapper(),
       // initialRoute: '/login', // Rute awal ke halaman login
       // routes: {
       //   '/login': (context) => const LoginScreen(),
@@ -52,7 +52,7 @@ class AuthWrapper extends StatelessWidget {
 
           if (user == null) {
             // If not logged in, show StartingPage
-            return LoginScreen();
+            return const LoginScreen();
           } else {
             String loginMethod = user.providerData.isNotEmpty
                 ? user.providerData[0].providerId == 'google.com'
@@ -78,7 +78,7 @@ class AuthWrapper extends StatelessWidget {
                     } else if (role == "user") {
                       return const UserHomePage();
                     } else {
-                      return LoginScreen();
+                      return const LoginScreen();
                     }
 
                     // Pass the username to HomePage
@@ -94,14 +94,14 @@ class AuthWrapper extends StatelessWidget {
                   }
                 } else {
                   // Show loading spinner while waiting for Firestore data
-                  return Center(child: CircularProgressIndicator());
+                  return const Center(child: CircularProgressIndicator());
                 }
               },
             );
           }
         } else {
           // Show loading spinner while waiting for auth state
-          return Center(child: CircularProgressIndicator());
+          return const Center(child: CircularProgressIndicator());
         }
       },
     );

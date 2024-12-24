@@ -70,12 +70,12 @@ class _OwnerHomePageState extends State<OwnerHomePage> {
           await FirebaseFirestore.instance.collection('orders').get();
       final statusCounts = Map<String, int>.from(orderStatusCount);
 
-      snapshot.docs.forEach((doc) {
+      for (var doc in snapshot.docs) {
         final status = doc['status'] as String?;
         if (status != null && statusCounts.containsKey(status)) {
           statusCounts[status] = statusCounts[status]! + 1;
         }
-      });
+      }
 
       setState(() {
         orderStatusCount.addAll(statusCounts);
@@ -92,17 +92,17 @@ class _OwnerHomePageState extends State<OwnerHomePage> {
           ? AppBar(
               automaticallyImplyLeading: false,
               backgroundColor: Colors.blue,
-              title: Row(
+              title: const Row(
                 children: [
                   Icon(
                     Icons.home,
                     size: 30,
                     color: Colors.white,
                   ),
-                  const SizedBox(width: 10),
+                  SizedBox(width: 10),
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
-                    children: const [
+                    children: [
                       Text(
                         'Dashboard',
                         style: TextStyle(
@@ -252,7 +252,7 @@ class _OwnerHomePageState extends State<OwnerHomePage> {
             );
           }).toList(),
           titlesData: FlTitlesData(
-            leftTitles: AxisTitles(
+            leftTitles: const AxisTitles(
               sideTitles: SideTitles(showTitles: true),
             ),
             bottomTitles: AxisTitles(

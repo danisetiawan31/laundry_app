@@ -2,6 +2,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
 class addKeuanganOwner extends StatelessWidget {
+  const addKeuanganOwner({super.key});
+
   @override
   Widget build(BuildContext context) {
     return buildAddTransactionDialog(context);
@@ -117,7 +119,7 @@ class addKeuanganOwner extends StatelessWidget {
                   if (titleController.text.isEmpty ||
                       amountController.text.isEmpty) {
                     ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text("Semua field harus diisi!")),
+                      const SnackBar(content: Text("Semua field harus diisi!")),
                     );
                     return;
                   }

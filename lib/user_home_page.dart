@@ -4,7 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:laundry_app/price_list_order.dart';
 import 'payment_page.dart';
 import 'user_history.dart';
-import 'profil.dart'; // Import halaman ProfilePage
+import 'profil.dart';
+import 'maps.dart'; // Import halaman ProfilePage
 
 class UserHomePage extends StatefulWidget {
   const UserHomePage({super.key});
@@ -55,13 +56,12 @@ class _UserHomePageState extends State<UserHomePage> {
       _selectedIndex = index;
     });
 
+    // Handle navigation logic here
     if (index == 0) {
-      if (_selectedIndex != 0) {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => const UserHomePage()),
-        );
-      }
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => const UserHomePage()),
+      );
     } else if (index == 1) {
       Navigator.push(
         context,
@@ -75,6 +75,26 @@ class _UserHomePageState extends State<UserHomePage> {
     }
   }
 
+  Future<void> navigateToMaps() async {
+    final updatedAddress = await Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => const PickUpMapScreen()),
+    );
+
+    if (updatedAddress != null) {
+      setState(() {
+        userData?['address'] = updatedAddress;
+      });
+
+      // Save updated address to Firestore
+      if (currentUser != null) {
+        await _firestore.collection('users').doc(currentUser!.uid).update({
+          'address': updatedAddress,
+        });
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -83,7 +103,8 @@ class _UserHomePageState extends State<UserHomePage> {
           Container(
             decoration: BoxDecoration(
               image: DecorationImage(
-                image: const NetworkImage('https://i.ibb.co.com/BcJsL66/bg1.png'),
+                image:
+                    const NetworkImage('https://i.ibb.co.com/BcJsL66/bg1.png'),
                 fit: BoxFit.cover,
                 colorFilter: ColorFilter.mode(
                   Colors.white.withOpacity(0.9),
@@ -104,7 +125,8 @@ class _UserHomePageState extends State<UserHomePage> {
                         radius: 30,
                         backgroundImage: userData?['profileImage'] != null
                             ? NetworkImage(userData!['profileImage'])
-                            : const AssetImage('assets/profile_image.png'),
+                            : const AssetImage('assets/profile_image.png')
+                                as ImageProvider,
                       ),
                       const SizedBox(width: 16),
                       Column(
@@ -115,7 +137,17 @@ class _UserHomePageState extends State<UserHomePage> {
                             style: const TextStyle(
                                 fontSize: 18, fontWeight: FontWeight.bold),
                           ),
-                          Text(userData?['address'] ?? 'Alamat tidak tersedia'),
+                          GestureDetector(
+                            onTap: navigateToMaps,
+                            child: Text(
+                              userData?['address'] ?? 'Tambah alamat',
+                              style: const TextStyle(
+                                fontSize: 14,
+                                color: Colors.blue,
+                                decoration: TextDecoration.underline,
+                              ),
+                            ),
+                          ),
                         ],
                       ),
                       const Spacer(),
@@ -148,7 +180,8 @@ class _UserHomePageState extends State<UserHomePage> {
                   GridView(
                     shrinkWrap: true,
                     physics: const NeverScrollableScrollPhysics(),
-                    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                    gridDelegate:
+                        const SliverGridDelegateWithFixedCrossAxisCount(
                       crossAxisCount: 2,
                       childAspectRatio: 1.5,
                       crossAxisSpacing: 10,
@@ -159,6 +192,10 @@ class _UserHomePageState extends State<UserHomePage> {
                           'https://i.ibb.co.com/86LKZLb/img2.jpg'),
                       serviceCard('Cuci Setrika',
                           'https://i.ibb.co.com/F0PZFHd/Iron.png'),
+                      serviceCard('Cuci Bedcover',
+                          'https://i.ibb.co.com/1GRCG26/Bed.png'),
+                      serviceCard('Cuci Gorden',
+                          'https://i.ibb.co.com/bzj0MbW/Carpet.png'),
                     ],
                   ),
                 ],
@@ -194,7 +231,10 @@ class _UserHomePageState extends State<UserHomePage> {
   Widget serviceCard(String title, String imageUrl) {
     return GestureDetector(
       onTap: () {
-        if (title == "Cuci Kering" || title == "Cuci Setrika") {
+        if (title == "Cuci Kering" ||
+            title == "Cuci Setrika" ||
+            title == "Cuci Bedcover" ||
+            title == "Cuci Gorden") {
           Navigator.push(
             context,
             MaterialPageRoute(

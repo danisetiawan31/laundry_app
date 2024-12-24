@@ -18,7 +18,7 @@ class _AddOrderPageState extends State<AddOrderPage> {
   final _priceController = TextEditingController();
 
   String _service = 'Laundry';
-  String _status = 'Proses'; // Set status to "Proses" by default
+  final String _status = 'Proses'; // Set status to "Proses" by default
   String _paymentStatus = 'Cash';
 
   @override

@@ -31,13 +31,13 @@ class _OwnerOrderViewState extends State<OwnerOrderView> {
             ),
           ),
         ),
-        title: Row(
+        title: const Row(
           mainAxisAlignment: MainAxisAlignment.center, // Menggeser ke kiri
           children: [
-            const Icon(Icons.local_laundry_service,
+            Icon(Icons.local_laundry_service,
                 color: Colors.white, size: 28),
-            const SizedBox(width: 10),
-            const Text(
+            SizedBox(width: 10),
+            Text(
               'Pesanan Pelanggan',
               style: TextStyle(
                 fontSize: 22,

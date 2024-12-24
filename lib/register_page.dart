@@ -56,7 +56,7 @@ class _RegisterPageState extends State<RegisterPage> {
           Container(
             decoration: BoxDecoration(
               image: DecorationImage(
-                image: NetworkImage(
+                image: const NetworkImage(
                     'https://i.ibb.co.com/BcJsL66/bg1.png'), // Ganti dengan URL background Anda
                 fit: BoxFit.cover,
                 colorFilter: ColorFilter.mode(

@@ -4,14 +4,16 @@ import 'package:fl_chart/fl_chart.dart';
 import 'package:laundry_app/owner_keuangan_add.dart';
 
 class OwnerKeuanganPage extends StatelessWidget {
-  final CollectionReference orders = FirebaseFirestore.instance
-      .collection('orders'); // Ganti dengan nama koleksi Firestore Anda.
+  final CollectionReference orders =
+      FirebaseFirestore.instance.collection('orders');
+
+  OwnerKeuanganPage({super.key}); // Ganti dengan nama koleksi Firestore Anda.
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Row(
+        title: const Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Icon(
@@ -31,7 +33,7 @@ class OwnerKeuanganPage extends StatelessWidget {
         ),
         centerTitle: true,
         flexibleSpace: Container(
-          decoration: BoxDecoration(
+          decoration: const BoxDecoration(
             gradient: LinearGradient(
               colors: [Colors.blueAccent, Colors.lightBlue],
               begin: Alignment.topLeft,
@@ -44,19 +46,19 @@ class OwnerKeuanganPage extends StatelessWidget {
           Stack(
             children: [
               IconButton(
-                icon: Icon(Icons.notifications),
+                icon: const Icon(Icons.notifications),
                 onPressed: () {},
               ),
               Positioned(
                 right: 8,
                 top: 8,
                 child: Container(
-                  padding: EdgeInsets.all(4),
-                  decoration: BoxDecoration(
+                  padding: const EdgeInsets.all(4),
+                  decoration: const BoxDecoration(
                     color: Colors.red,
                     shape: BoxShape.circle,
                   ),
-                  child: Text(
+                  child: const Text(
                     '3',
                     style: TextStyle(color: Colors.white, fontSize: 12),
                   ),
@@ -157,7 +159,7 @@ class OwnerKeuanganPage extends StatelessWidget {
           print("Hello");
           Navigator.push(
             context,
-            MaterialPageRoute(builder: (context) => addKeuanganOwner()),
+            MaterialPageRoute(builder: (context) => const addKeuanganOwner()),
           );
 
           // Tambahkan aksi jika diperlukan
@@ -236,10 +238,10 @@ class OwnerKeuanganPage extends StatelessWidget {
       height: 200,
       child: BarChart(
         BarChartData(
-          titlesData: FlTitlesData(show: true),
+          titlesData: const FlTitlesData(show: true),
           borderData: FlBorderData(show: true),
           barGroups: chartData,
-          gridData: FlGridData(show: true),
+          gridData: const FlGridData(show: true),
         ),
       ),
     );
@@ -381,7 +383,7 @@ class OwnerKeuanganPage extends StatelessWidget {
                   if (titleController.text.isEmpty ||
                       amountController.text.isEmpty) {
                     ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text("Semua field harus diisi!")),
+                      const SnackBar(content: Text("Semua field harus diisi!")),
                     );
                     return;
                   }

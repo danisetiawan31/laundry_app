@@ -110,7 +110,7 @@ class _ProfilePageState extends State<ProfilePage> {
     await _auth.signOut();
     Navigator.push(
       context,
-      MaterialPageRoute(builder: (context) => LoginScreen()),
+      MaterialPageRoute(builder: (context) => const LoginScreen()),
     );
   }
 

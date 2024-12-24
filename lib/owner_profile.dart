@@ -4,6 +4,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 class ProfilePage extends StatelessWidget {
   final FirebaseAuth _auth = FirebaseAuth.instance;
 
+   ProfilePage({super.key});
+
   Future<void> _logout(BuildContext context) async {
     try {
       await _auth.signOut();
@@ -20,7 +22,7 @@ class ProfilePage extends StatelessWidget {
         backgroundColor: Colors.blue,
         elevation: 0,
         automaticallyImplyLeading: false,
-        title: Row(
+        title: const Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Icon(
@@ -62,7 +64,7 @@ class ProfilePage extends StatelessWidget {
                         color: Colors.grey[700],
                       ),
                     ),
-                    SizedBox(height: 12),
+                    const SizedBox(height: 12),
                     Text(
                       'Shabrina Laundry',
                       style: TextStyle(
@@ -71,7 +73,7 @@ class ProfilePage extends StatelessWidget {
                         color: Colors.blue[800],
                       ),
                     ),
-                    SizedBox(height: 4),
+                    const SizedBox(height: 4),
                     Text(
                       'owner@shabrinalaundry.com',
                       style: TextStyle(
@@ -88,33 +90,33 @@ class ProfilePage extends StatelessWidget {
           // Body Profile Options
           Expanded(
             child: ListView(
-              padding: EdgeInsets.all(16.0),
+              padding: const EdgeInsets.all(16.0),
               children: [
                 ListTile(
-                  leading: Icon(Icons.edit, color: Colors.blue),
-                  title: Text('Edit Profil'),
-                  trailing: Icon(Icons.arrow_forward_ios, size: 16),
+                  leading: const Icon(Icons.edit, color: Colors.blue),
+                  title: const Text('Edit Profil'),
+                  trailing: const Icon(Icons.arrow_forward_ios, size: 16),
                   onTap: () {
                     // TODO: Navigate to edit profile page
                   },
                 ),
-                Divider(),
+                const Divider(),
                 ListTile(
-                  leading: Icon(Icons.lock, color: Colors.blue),
-                  title: Text('Ubah Password'),
-                  trailing: Icon(Icons.arrow_forward_ios, size: 16),
+                  leading: const Icon(Icons.lock, color: Colors.blue),
+                  title: const Text('Ubah Password'),
+                  trailing: const Icon(Icons.arrow_forward_ios, size: 16),
                   onTap: () {
                     // TODO: Navigate to change password page
                   },
                 ),
-                Divider(),
+                const Divider(),
                 ListTile(
-                  leading: Icon(Icons.logout, color: Colors.red),
-                  title: Text(
+                  leading: const Icon(Icons.logout, color: Colors.red),
+                  title: const Text(
                     'Keluar',
                     style: TextStyle(color: Colors.red),
                   ),
-                  trailing: Icon(Icons.arrow_forward_ios, size: 16),
+                  trailing: const Icon(Icons.arrow_forward_ios, size: 16),
                   onTap: () => _logout(context),
                 ),
               ],
